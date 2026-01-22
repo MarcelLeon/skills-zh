@@ -3,3 +3,7 @@ __pycache__/
 .idea/
 .vscode/
 
+# 排除内部文档 (准备发布到 GitHub)
+AGENTS.md
+docs/
+README.md.backup

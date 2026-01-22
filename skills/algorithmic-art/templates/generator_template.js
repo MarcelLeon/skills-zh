@@ -1,136 +1,135 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *                  P5.JS GENERATIVE ART - BEST PRACTICES
+ *                  P5.JS 生成式艺术 - 最佳实践
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * This file shows STRUCTURE and PRINCIPLES for p5.js generative art.
- * It does NOT prescribe what art you should create.
+ * 此文件展示 p5.js 生成式艺术的结构和原则。
+ * 它不规定您应该创建什么艺术。
  *
- * Your algorithmic philosophy should guide what you build.
- * These are just best practices for how to structure your code.
+ * 您的算法哲学应该指导您构建什么。
+ * 这些只是如何构建代码的最佳实践。
  *
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
 // ============================================================================
-// 1. PARAMETER ORGANIZATION
+// 1. 参数组织
 // ============================================================================
-// Keep all tunable parameters in one object
-// This makes it easy to:
-// - Connect to UI controls
-// - Reset to defaults
-// - Serialize/save configurations
+// 将所有可调参数保存在一个对象中
+// 这使得以下操作变得容易：
+// - 连接到 UI 控件
+// - 重置为默认值
+// - 序列化/保存配置
 
 let params = {
-    // Define parameters that match YOUR algorithm
-    // Examples (customize for your art):
-    // - Counts: how many elements (particles, circles, branches, etc.)
-    // - Scales: size, speed, spacing
-    // - Probabilities: likelihood of events
-    // - Angles: rotation, direction
-    // - Colors: palette arrays
+    // 定义与您的算法匹配的参数
+    // 示例（为您的艺术自定义）：
+    // - 计数：多少个元素（粒子、圆、分支等）
+    // - 比例：大小、速度、间距
+    // - 概率：事件的可能性
+    // - 角度：旋转、方向
+    // - 颜色：调色板数组
 
     seed: 12345,
-    // define colorPalette as an array -- choose whatever colors you'd like ['#d97757', '#6a9bcc', '#788c5d', '#b0aea5']
-    // Add YOUR parameters here based on your algorithm
+    // 将 colorPalette 定义为数组 -- 选择您喜欢的任何颜色 ['#d97757', '#6a9bcc', '#788c5d', '#b0aea5']
+    // 根据您的算法在此处添加您的参数
 };
 
 // ============================================================================
-// 2. SEEDED RANDOMNESS (Critical for reproducibility)
+// 2. 确定性随机（对可重现性至关重要）
 // ============================================================================
-// ALWAYS use seeded random for Art Blocks-style reproducible output
+// 始终使用确定性随机以实现 Art Blocks 风格的可重现输出
 
 function initializeSeed(seed) {
     randomSeed(seed);
     noiseSeed(seed);
-    // Now all random() and noise() calls will be deterministic
+    // 现在所有 random() 和 noise() 调用都将是确定性的
 }
 
 // ============================================================================
-// 3. P5.JS LIFECYCLE
+// 3. P5.JS 生命周期
 // ============================================================================
 
 function setup() {
     createCanvas(800, 800);
 
-    // Initialize seed first
+    // 首先初始化种子
     initializeSeed(params.seed);
 
-    // Set up your generative system
-    // This is where you initialize:
-    // - Arrays of objects
-    // - Grid structures
-    // - Initial positions
-    // - Starting states
+    // 设置您的生成系统
+    // 这是您初始化的地方：
+    // - 对象数组
+    // - 网格结构
+    // - 初始位置
+    // - 起始状态
 
-    // For static art: call noLoop() at the end of setup
-    // For animated art: let draw() keep running
+    // 对于静态艺术：在 setup 结束时调用 noLoop()
+    // 对于动画艺术：让 draw() 持续运行
 }
 
 function draw() {
-    // Option 1: Static generation (runs once, then stops)
-    // - Generate everything in setup()
-    // - Call noLoop() in setup()
-    // - draw() doesn't do much or can be empty
+    // 选项 1：静态生成（运行一次，然后停止）
+    // - 在 setup() 中生成所有内容
+    // - 在 setup() 中调用 noLoop()
+    // - draw() 不做太多事情或可以为空
 
-    // Option 2: Animated generation (continuous)
-    // - Update your system each frame
-    // - Common patterns: particle movement, growth, evolution
-    // - Can optionally call noLoop() after N frames
+    // 选项 2：动画生成（连续）
+    // - 每帧更新您的系统
+    // - 常见模式：粒子移动、生长、演化
+    // - 可以选择在 N 帧后调用 noLoop()
 
-    // Option 3: User-triggered regeneration
-    // - Use noLoop() by default
-    // - Call redraw() when parameters change
+    // 选项 3：用户触发的重新生成
+    // - 默认使用 noLoop()
+    // - 参数更改时调用 redraw()
 }
 
 // ============================================================================
-// 4. CLASS STRUCTURE (When you need objects)
+// 4. 类结构（当您需要对象时）
 // ============================================================================
-// Use classes when your algorithm involves multiple entities
-// Examples: particles, agents, cells, nodes, etc.
+// 当您的算法涉及多个实体时使用类
+// 示例：粒子、代理、单元、节点等
 
 class Entity {
     constructor() {
-        // Initialize entity properties
-        // Use random() here - it will be seeded
+        // 初始化实体属性
+        // 在此处使用 random() - 它将被确定
     }
 
     update() {
-        // Update entity state
-        // This might involve:
-        // - Physics calculations
-        // - Behavioral rules
-        // - Interactions with neighbors
+        // 更新实体状态
+        // 这可能涉及：
+        // - 物理计算
+        // - 行为规则
+        // - 与邻居的交互
     }
 
     display() {
-        // Render the entity
-        // Keep rendering logic separate from update logic
+        // 渲染实体
+        // 将渲染逻辑与更新逻辑分开
     }
 }
 
-// ============================================================================
-// 5. PERFORMANCE CONSIDERATIONS
-// ============================================================================
-
-// For large numbers of elements:
-// - Pre-calculate what you can
-// - Use simple collision detection (spatial hashing if needed)
-// - Limit expensive operations (sqrt, trig) when possible
-// - Consider using p5 vectors efficiently
-
-// For smooth animation:
-// - Aim for 60fps
-// - Profile if things are slow
-// - Consider reducing particle counts or simplifying calculations
-
-// ============================================================================
-// 6. UTILITY FUNCTIONS
+// ============================================================================ 性能考虑
 // ============================================================================
 
-// Color utilities
+// 对于大量元素：
+// - 预先计算您可以计算的内容
+// - 使用简单的碰撞检测（如需要可使用空间哈希）
+// - 尽可能限制昂贵的操作（sqrt、三角函数）
+// - 考虑高效使用 p5 向量
+
+// 对于流畅动画：
+// - 目标 60fps
+// - 如果慢则进行性能分析
+// - 考虑减少粒子数量或简化计算
+
+// ============================================================================
+// 6. 实用函数
+// ============================================================================
+
+// 颜色实用程序
 function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const result = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex);
     return result ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
@@ -142,7 +141,7 @@ function colorFromPalette(index) {
     return params.colorPalette[index % params.colorPalette.length];
 }
 
-// Mapping and easing
+// 映射和缓动
 function mapRange(value, inMin, inMax, outMin, outMax) {
     return outMin + (outMax - outMin) * ((value - inMin) / (inMax - inMin));
 }
@@ -151,7 +150,7 @@ function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-// Constrain to bounds
+// 约束到边界
 function wrapAround(value, max) {
     if (value < 0) return max;
     if (value > max) return 0;
@@ -159,45 +158,45 @@ function wrapAround(value, max) {
 }
 
 // ============================================================================
-// 7. PARAMETER UPDATES (Connect to UI)
+// 7. 参数更新（连接到 UI）
 // ============================================================================
 
 function updateParameter(paramName, value) {
     params[paramName] = value;
-    // Decide if you need to regenerate or just update
-    // Some params can update in real-time, others need full regeneration
+    // 决定是否需要重新生成或只是更新
+    // 某些参数可以实时更新，其他参数需要完全重新生成
 }
 
 function regenerate() {
-    // Reinitialize your generative system
-    // Useful when parameters change significantly
+    // 重新初始化您的生成系统
+    // 当参数显著变化时很有用
     initializeSeed(params.seed);
-    // Then regenerate your system
+    // 然后重新生成您的系统
 }
 
 // ============================================================================
-// 8. COMMON P5.JS PATTERNS
+// 8. 常见 P5.JS 模式
 // ============================================================================
 
-// Drawing with transparency for trails/fading
+// 使用透明度绘制轨迹/淡化
 function fadeBackground(opacity) {
-    fill(250, 249, 245, opacity); // Anthropic light with alpha
+    fill(250, 249, 245, opacity); // Anthropic 浅色带 alpha
     noStroke();
     rect(0, 0, width, height);
 }
 
-// Using noise for organic variation
+// 使用噪声进行有机变化
 function getNoiseValue(x, y, scale = 0.01) {
     return noise(x * scale, y * scale);
 }
 
-// Creating vectors from angles
+// 从角度创建向量
 function vectorFromAngle(angle, magnitude = 1) {
     return createVector(cos(angle), sin(angle)).mult(magnitude);
 }
 
 // ============================================================================
-// 9. EXPORT FUNCTIONS
+// 9. 导出函数
 // ============================================================================
 
 function exportImage() {
@@ -205,19 +204,19 @@ function exportImage() {
 }
 
 // ============================================================================
-// REMEMBER
+// 记住
 // ============================================================================
 //
-// These are TOOLS and PRINCIPLES, not a recipe.
-// Your algorithmic philosophy should guide WHAT you create.
-// This structure helps you create it WELL.
+// 这些是工具和原则，而非配方。
+// 您的算法哲学应该指导您创建什么。
+// 这种结构帮助您很好地创建它。
 //
-// Focus on:
-// - Clean, readable code
-// - Parameterized for exploration
-// - Seeded for reproducibility
-// - Performant execution
+// 专注于：
+// - 干净、可读的代码
+// - 参数化以便探索
+// - 确定性以实现可重现性
+// - 高性能执行
 //
-// The art itself is entirely up to you!
+// 艺术本身完全取决于您！
 //
 // ============================================================================
