@@ -1,353 +1,411 @@
 ---
 name: skill-creator
-description: 创建高效 Skills 的指南。当用户需要创建新的 skill（或更新现有 skill）以通过专业知识、工作流程或工具集成扩展 Claude 的能力时使用此技能。
-license: Complete terms in LICENSE.txt
+description: 创建新 skills、改造已有 skills、并通过评测闭环持续优化。用户只要提到“做一个 skill”“改造 skill”“跑评测/benchmark”“验证 skill 效果”“优化 description 触发率”等场景，都应优先使用此技能。
 ---
 
 # Skill Creator
 
-本 skill 提供创建高效 skills 的指导。
+用于“创建 -> 评测 -> 迭代 -> 优化触发”的完整工作流技能。
 
-## 关于 Skills
+## 先对齐用户阶段
 
-Skills 是模块化的、自包含的软件包，通过提供专业知识、工作流程和工具来扩展 Claude 的能力。可以将它们视为特定领域或任务的"入职指南"——它们将 Claude 从通用助手转变为配备了模型无法完全掌握的程序性知识的专业助手。
+先判断用户当前在哪个阶段，再补齐下一步：
 
-### Skills 提供的能力
+- 还在定义需求：先澄清目标、触发场景、输出标准
+- 已有草稿：直接进入测试与迭代
+- 已有多轮结果：重点做诊断与重构，而不是重写一遍
 
-1. 专业工作流程 - 特定领域的多步骤流程
-2. 工具集成 - 使用特定文件格式或 API 的指令
-3. 领域专业知识 - 公司特定知识、架构、业务逻辑
-4. 捆绑资源 - 用于复杂和重复任务的脚本、参考文档和资源文件
+如果用户明确说“不需要完整评测流程”，可降级为轻量协作；否则默认走标准闭环。
 
-## 核心原则
+## 与用户沟通风格
 
-### 简洁至上
+根据用户熟悉度调节术语密度：
 
-上下文窗口是公共资源。Skills 与 Claude 需要的其他一切共享上下文窗口：系统提示词、对话历史、其他 Skills 的元数据，以及实际的用户请求。
+- 可直接使用：`evaluation`、`benchmark`
+- 对 `JSON`、`assertion` 等术语，若用户没有明显技术背景，先用一句话解释再使用
 
-**默认假设：Claude 已经非常智能。** 只添加 Claude 尚未掌握的上下文信息。对每条信息提出质疑："Claude 真的需要这个解释吗？" 以及 "这段文字值得它的 token 成本吗？"
+目标是“专业但不堆术语”。
 
-优先使用简洁的示例，而非冗长的解释。
+---
 
-### 设置适当的自由度
+## 一、创建 Skill
 
-根据任务的脆弱性和可变性匹配具体程度：
+### 1) Capture Intent（先抽取上下文再提问）
 
-**高自由度（基于文本的指令）**：当多种方法都有效、决策取决于上下文，或启发式方法指导方案时使用。
+若当前对话里已包含可复用流程，先从历史中提取：
 
-**中等自由度（伪代码或带参数的脚本）**：当存在首选模式、可以接受一些变化，或配置影响行为时使用。
+- 用了哪些工具
+- 步骤顺序是什么
+- 用户纠正过哪些点
+- 输入/输出格式长什么样
 
-**低自由度（特定脚本，少量参数）**：当操作脆弱且容易出错、一致性至关重要，或必须遵循特定顺序时使用。
+然后确认以下 4 点：
 
-将 Claude 想象为探索路径：有悬崖的狭窄桥梁需要具体的护栏（低自由度），而开阔的田野允许多条路线（高自由度）。
+1. 这个 skill 要让 Claude 具体做成什么事？
+2. 触发条件是什么（用户会怎么说）？
+3. 预期输出格式是什么？
+4. 是否需要测试用例？
 
-### Skill 的结构
+默认建议：
 
-每个 skill 由一个必需的 SKILL.md 文件和可选的捆绑资源组成：
+- 可客观验证任务（文件转换、结构化提取、固定流程）建议有测试
+- 主观创作任务（文风、设计偏好）可以先不做形式化断言
+
+### 2) Interview & Research
+
+主动补齐：
+
+- 边界/异常情况
+- 输入输出样例
+- 依赖与运行环境
+- 成功标准
+
+测试提示词（eval prompts）在这一步完成前不要急着写。
+
+### 3) 编写 SKILL.md
+
+至少落实：
+
+- `name`
+- `description`（这是触发核心，必须写清“做什么 + 何时用”）
+- 正文流程（必要步骤、工具用法、结果标准）
+
+`description` 要稍偏“主动触发”，避免 under-trigger。
+
+示例（表达方式）：
+
+- 弱：`用于生成仪表盘`
+- 强：`用于生成仪表盘。凡是用户提到 dashboard、指标可视化、看板、业务监控、数据展示，即便没说“仪表盘”，也应触发此技能。`
+
+### 4) Skill 结构原则
 
 ```
 skill-name/
-├── SKILL.md (必需)
-│   ├── YAML frontmatter 元数据（必需）
-│   │   ├── name: （必需）
-│   │   └── description: （必需）
-│   └── Markdown 指令（必需）
-└── 捆绑资源（可选）
-    ├── scripts/          - 可执行代码（Python/Bash 等）
-    ├── references/       - 按需加载到上下文的参考文档
-    └── assets/           - 输出中使用的文件（模板、图标、字体等）
+├── SKILL.md (required)
+└── optional resources
+    ├── scripts/
+    ├── references/
+    └── assets/
 ```
 
-#### SKILL.md（必需）
+渐进披露：
 
-每个 SKILL.md 包含：
+1. 元数据（name/description）总在上下文
+2. `SKILL.md` 触发后加载（建议 <500 行，必要时可超）
+3. `scripts/references/assets` 按需读取
 
-- **Frontmatter**（YAML）：包含 `name` 和 `description` 字段。这些是 Claude 用来判断何时使用该 skill 的唯一字段，因此清晰而全面地描述 skill 是什么以及何时应该使用它非常重要。
-- **主体**（Markdown）：使用 skill 的指令和指导。仅在 skill 触发后加载（如果加载的话）。
+设计要点：
 
-#### 捆绑资源（可选）
+- 若接近 500 行，把变体细节下沉到 `references/`
+- `SKILL.md` 中要明确指向这些参考文件，告诉模型何时读
+- 参考文件 >300 行建议提供目录
 
-##### Scripts（`scripts/`）
+### 5) 安全与可预期
 
-用于需要确定性可靠性或被重复重写的任务的可执行代码（Python/Bash 等）。
+- 不得包含恶意代码、提权、未授权访问、数据外传流程
+- Skill 的真实行为应与描述一致，不做“隐式意图”
 
-- **何时包含**：当相同的代码被重复重写或需要确定性可靠性时
-- **示例**：用于 PDF 旋转任务的 `scripts/rotate_pdf.py`
-- **优势**：节省 token、确定性、可以在不加载到上下文的情况下执行
-- **注意**：脚本可能仍需要被 Claude 读取以进行修补或环境特定的调整
+### 6) 编写风格
 
-##### References（`references/`）
+- 以祈使句描述动作
+- 少用机械化 `MUST`，多解释“为什么要这样做”
+- 指令应可泛化，不要对少量样例过拟合
 
-旨在按需加载到上下文中以指导 Claude 的流程和思考的参考文档和参考资料。
+---
 
-- **何时包含**：用于 Claude 在工作时应该参考的文档
-- **示例**：用于财务架构的 `references/finance.md`、公司保密协议模板的 `references/mnda.md`、公司政策的 `references/policies.md`、API 规范的 `references/api_docs.md`
-- **用例**：数据库架构、API 文档、领域知识、公司政策、详细的工作流程指南
-- **优势**：保持 SKILL.md 精简，仅在 Claude 确定需要时加载
-- **最佳实践**：如果文件很大（>10k 字），在 SKILL.md 中包含 grep 搜索模式
-- **避免重复**：信息应存在于 SKILL.md 或 references 文件中，而不是两者都有。除非是 skill 的真正核心内容，否则优先使用 references 文件存储详细信息——这样既保持 SKILL.md 精简，又使信息可被发现而不占用上下文窗口。在 SKILL.md 中仅保留基本的程序性指令和工作流程指导；将详细的参考资料、架构和示例移至 references 文件。
+## 二、测试用例与评测闭环
 
-##### Assets（`assets/`）
+写完草稿后，先准备 2-3 条真实用户风格测试提示词，并与用户确认。
 
-不打算加载到上下文中，而是在 Claude 生成的输出中使用的文件。
+把测试集存到 `evals/evals.json`（先写 prompts，断言可后补）：
 
-- **何时包含**：当 skill 需要将在最终输出中使用的文件时
-- **示例**：用于品牌资产的 `assets/logo.png`、PowerPoint 模板的 `assets/slides.pptx`、HTML/React 样板文件的 `assets/frontend-template/`、字体文件的 `assets/font.ttf`
-- **用例**：模板、图像、图标、样板代码、字体、被复制或修改的示例文档
-- **优势**：将输出资源与文档分离，使 C 能够使用文件而不将其加载到上下文中
-
-#### Skill 中不应包含的内容
-
-Skill 应仅包含直接支持其功能的基本文件。不要创建多余的文档或辅助文件，包括：
-
-- README.md
-- INSTALLATION_GUIDE.md
-- QUICK_REFERENCE.md
-- CHANGELOG.md
-- 等
-
-Skill 应仅包含 AI 助手完成手头任务所需的信息。它不应包含有关创建过程的辅助上下文、设置和测试程序、面向用户的文档等。创建额外的文档文件只会增加混乱和困惑。
-
-### 渐进式披露设计原则
-
-Skills 使用三级加载系统来有效管理上下文：
-
-1. **元数据（name + description）** - 始终在上下文中（约 100 字）
-2. **SKILL.md 主体** - 当 skill 触发时（<5k 字）
-3. **捆绑资源** - 根据 Claude 的需要（无限制，因为脚本可以在不读取到上下文窗口的情况下执行）
-
-#### 渐进式披露模式
-
-保持 SKILL.md 主体精简且低于 500 行，以最小化上下文膨胀。当接近此限制时，将内容拆分到单独的文件中。当将内容拆分到其他文件时，非常重要的是从 SKILL.md 中引用它们并清楚地描述何时阅读它们，以确保 skill 的读者知道它们的存在以及何时使用它们。
-
-**关键原则：** 当 skill 支持多个变体、框架或选项时，在 SKILL.md 中仅保留核心工作流程和选择指导。将特定于变体的详细信息（模式、示例、配置）移至单独的参考文件。
-
-**模式 1：带引用的高级指南**
-
-```markdown
-# PDF 处理
-
-## 快速入门
-
-使用 pdfplumber 提取文本：
-[代码示例]
-
-## 高级功能
-
-- **表单填充**：参见 [FORMS.md](FORMS.md) 获取完整指南
-- **API 参考**：参见 [REFERENCE.md](REFERENCE.md) 了解所有方法
-- **示例**：参见 [EXAMPLES.md](EXAMPLES.md) 了解常见模式
+```json
+{
+  "skill_name": "example-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "User's task prompt",
+      "expected_output": "Description of expected result",
+      "files": []
+    }
+  ]
+}
 ```
 
-Claude 仅在需要时加载 FORMS.md、REFERENCE.md 或 EXAMPLES.md。
+完整 schema 见 `references/schemas.md`。
 
-**模式 2：特定领域的组织**
+### 强制顺序：不要中途停
 
-对于具有多个领域的 Skills，按领域组织内容以避免加载不相关的上下文：
+不要使用 `/skill-test` 或其他测试 skill；按下面连续完成。
 
-```
-bigquery-skill/
-├── SKILL.md（概述和导航）
-└── reference/
-    ├── finance.md（收入、计费指标）
-    ├── sales.md（商机、销售漏斗）
-    ├── product.md（API 使用、功能）
-    └── marketing.md（营销活动、归因）
-```
+工作目录规范：
 
-当用户询问销售指标时，Claude 仅读取 sales.md。
+- 在 skill 同级创建 `<skill-name>-workspace/`
+- 迭代分目录：`iteration-1/`, `iteration-2/`
+- 每条 eval 单独目录：`eval-0/`, `eval-1/`
+- 仅在需要时创建目录，不要一次性全部建完
 
-同样，对于支持多个框架或变体的 skills，按变体组织：
+### Step 1：同一轮同时启动 with-skill 与 baseline
 
-```
-cloud-deploy/
-├── SKILL.md（工作流程 + 提供商选择）
-└── references/
-    ├── aws.md（AWS 部署模式）
-    ├── gcp.md（GCP 部署模式）
-    └── azure.md（Azure 部署模式）
-```
+每个测试用例同轮启动两路：
 
-当用户选择 AWS 时，Claude 仅读取 aws.md。
+- `with_skill`
+- baseline
 
-**模式 3：条件细节**
+基线策略：
 
-显示基本内容，链接到高级内容：
+- 新建 skill：baseline = `without_skill`
+- 改造现有 skill：baseline = 旧版本快照（`cp -r <skill-path> <workspace>/skill-snapshot/`）
 
-```markdown
-# DOCX 处理
+每个 eval 写 `eval_metadata.json`（此时 assertions 可先空）：
 
-## 创建文档
-
-使用 docx-js 创建新文档。参见 [DOCX-JS.md](DOCX-JS.md)。
-
-## 编辑文档
-
-对于简单编辑，直接修改 XML。
-
-**对于修订追踪**：参见 [REDLINING.md](REDLINING.md)
-**对于 OOXML 详细信息**：参见 [OOXML.md](OOXML.md)
+```json
+{
+  "eval_id": 0,
+  "eval_name": "descriptive-name-here",
+  "prompt": "The user's task prompt",
+  "assertions": []
+}
 ```
 
-Claude 仅在用户需要这些功能时读取 REDLINING.md 或 OOXML.md。
+### Step 2：运行期间补断言
 
-**重要指南：**
+不要干等任务结束。并行完成：
 
-- **避免深度嵌套的引用** - 保持引用从 SKILL.md 的一级深度。所有引用文件都应直接从 SKILL.md 链接。
-- **组织较长的引用文件** - 对于超过 100 行的文件，在顶部包含目录，以便 Claude 在预览时可以看到完整的范围。
+- 草拟可客观验证的 assertions
+- 向用户解释每条断言检验什么
+- 更新 `eval_metadata.json` 与 `evals/evals.json`
 
-## Skill 创建流程
+主观任务不强行量化；以人工评审为主。
 
-Skill 创建包括以下步骤：
+### Step 3：任务完成即记录时延/Token
 
-1. 通过具体示例理解 skill
-2. 规划可重用的 skill 内容（脚本、参考文档、资源文件）
-3. 初始化 skill（运行 init_skill.py）
-4. 编辑 skill（实现资源并编写 SKILL.md）
-5. 打包 skill（运行 package_skill.py）
-6. 基于实际使用迭代
+子任务完成通知里会出现 `total_tokens` 与 `duration_ms`，这是唯一可靠来源。必须立即写入各运行目录 `timing.json`：
 
-按顺序遵循这些步骤，仅在有明确理由不适用时跳过。
+```json
+{
+  "total_tokens": 84852,
+  "duration_ms": 23332,
+  "total_duration_seconds": 23.3
+}
+```
 
-### 步骤 1：通过具体示例理解 Skill
+### Step 4：评分、聚合、分析、展示
 
-仅在 skill 的使用模式已经清楚理解时跳过此步骤。即使在处理现有 skill 时，此步骤仍然有价值。
+1. **评分（grading）**  
+逐 run 生成 `grading.json`。数组字段必须是 `text`、`passed`、`evidence`（viewer 依赖这些字段名）。
 
-要创建有效的 skill，需要清楚理解 skill 将如何使用的具体示例。这种理解可以来自直接的用户示例或经过用户反馈验证的生成示例。
-
-例如，在构建图像编辑 skill 时，相关问题包括：
-
-- "图像编辑 skill 应该支持什么功能？编辑、旋转，还有其他吗？"
-- "您能给出一些如何使用此 skill 的示例吗？"
-- "我可以想象用户要求诸如'移除此图像中的红眼'或'旋转此图像'之类的事情。您还能想象此 skill 被如何使用吗？"
-- "用户会说什么来触发此 skill？"
-
-为避免让用户不知所措，避免在单条消息中提出太多问题。从最重要的问题开始，并根据需要跟进以提高效果。
-
-当对 skill 应支持的功能有清晰的认识时，结束此步骤。
-
-### 步骤 2：规划可重用的 Skill 内容
-
-要将具体示例转化为有效的 skill，请通过以下方式分析每个示例：
-
-1. 考虑如何从头开始执行示例
-2. 识别在重复执行这些工作流程时有用的脚本、参考文档和资源文件
-
-示例：在构建 `pdf-editor` skill 以处理诸如"帮我旋转这个 PDF"之类的查询时，分析显示：
-
-1. 旋转 PDF 每次都需要重写相同的代码
-2. `scripts/rotate_pdf.py` 脚本将有助于存储在 skill 中
-
-示例：在设计 `frontend-webapp-builder` skill 以处理诸如"为我构建一个待办事项应用"或"为我构建一个跟踪步数的仪表板"之类的查询时，分析显示：
-
-1. 编写前端 Web 应用程序每次都需要相同的样板 HTML/React 代码
-2. 包含样板 HTML/React 项目文件的 `assets/hello-world/` 模板将有助于存储在 skill 中
-
-示例：在构建 `big-query` skill 以处理诸如"今天有多少用户登录？"之类的查询时，分析显示：
-
-1. 查询 BigQuery 每次都需要重新发现表架构和关系
-2. 记录表架构的 `references/schema.md` 文件将有助于存储在 skill 中
-
-要确定 skill 的内容，请分析每个具体示例以创建要包含的可重用资源列表：脚本、参考文档和资源文件。
-
-### 步骤 3：初始化 Skill
-
-此时，是时候实际创建 skill 了。
-
-仅在正在开发的 skill 已经存在且需要迭代或打包时跳过此步骤。在这种情况下，继续下一步。
-
-从头开始创建新 skill 时，请始终运行 `init_skill.py` 脚本。该脚本方便地生成一个新的模板 skill 目录，该目录自动包含 skill 所需的一切，使 skill 创建过程更加高效和可靠。
-
-用法：
+2. **聚合 benchmark**  
+在 `skills/skill-creator/` 目录运行：
 
 ```bash
-scripts/init_skill.py <skill-name> --path <output-directory>
+python -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <name>
 ```
 
-该脚本将：
+生成 `benchmark.json` 与 `benchmark.md`。
 
-- 在指定路径创建 skill 目录
-- 生成具有正确 frontmatter 和 TODO 占位符的 SKILL.md 模板
-- 创建示例资源目录：`scripts/`、`references/` 和 `assets/`
-- 在每个目录中添加可以自定义或删除的示例文件
+3. **分析（analyst pass）**  
+结合 `agents/analyzer.md` 检查：
 
-初始化后，根据需要自定义或删除生成的 SKILL.md 和示例文件。
+- 非区分性断言（各方案都通过）
+- 高方差/可能 flaky 的评测
+- 时延与 token 的权衡
 
-### 步骤 4：编辑 Skill
-
-在编辑（新生成或现有的）skill 时，请记住该 skill 是为另一个 Claude 实例使用而创建的。包含对 Claude 有益且不明显的信息。考虑哪些程序性知识、特定于领域的细节或可重用资源将帮助另一个 Claude 实例更有效地执行这些任务。
-
-#### 学习经过验证的设计模式
-
-根据您的 skill 需求，参考这些有用的指南：
-
-- **多步骤流程**：参见 references/workflows.md 了解顺序工作流程和条件逻辑
-- **特定输出格式或质量标准**：参见 references/output-patterns.md 了解模板和示例模式
-
-这些文件包含有效 skill 设计的既定最佳实践。
-
-#### 从可重用的 Skill 内容开始
-
-要开始实现，请从上述识别的可重用资源开始：`scripts/`、`references/` 和 `assets/` 文件。请注意，此步骤可能需要用户输入。例如，在实现 `brand-guidelines` skill 时，用户可能需要提供要存储在 `assets/` 中的品牌资产或模板，或要存储在 `references/` 中的文档。
-
-添加的脚本必须通过实际运行来测试，以确保没有错误并且输出符合预期。如果有许多类似的脚本，只需要测试一个代表性样本，以确保它们都能工作，同时平衡完成时间。
-
-应删除 skill 不需要的任何示例文件和目录。初始化脚本在 `scripts/`、`references/` 和 `assets/` 中创建示例文件以演示结构，但大多数 skills 不需要所有这些文件。
-
-#### 更新 SKILL.md
-
-**编写指南：** 始终使用祈使句/不定式形式。
-
-##### Frontmatter
-
-使用 `name` 和 `description` 编写 YAML frontmatter：
-
-- `name`：skill 名称
-- `description`：这是您的 skill 的主要触发机制，帮助 Claude 理解何时使用该 skill。
-  - 包含 Skill 做什么以及使用它的具体触发器/上下文。
-  - 在此处包含所有"何时使用"信息 - 不在主体中。主体仅在触发后加载，因此主体中的"何时使用此 Skill"部分对 Claude 没有帮助。
-  - `docx` skill 的示例描述："全面的文档创建、编辑和分析，支持修订追踪、评论、格式保留和文本提取。当 Claude 需要处理专业文档（.docx 文件）时使用，用于：(1) 创建新文档，(2) 修改或编辑内容，(3) 使用修订追踪，(4) 添加评论，或任何其他文档任务"
-
-不要在 YAML frontmatter 中包含任何其他字段。
-
-##### 主体
-
-编写使用 skill 及其捆绑资源的指令。
-
-### 步骤 5：打包 Skill
-
-一旦 skill 的开发完成，它必须被打包成可分发的 .skill 文件以与用户共享。打包过程首先自动验证 skill 以确保它满足所有要求：
+4. **生成评审 viewer（必须）**  
+使用官方脚本，不要自造 HTML：
 
 ```bash
-scripts/package_skill.py <path/to/skill-folder>
+nohup python <skill-creator-path>/eval-viewer/generate_review.py \
+  <workspace>/iteration-N \
+  --skill-name "my-skill" \
+  --benchmark <workspace>/iteration-N/benchmark.json \
+  > /dev/null 2>&1 &
+VIEWER_PID=$!
 ```
 
-可选的输出目录规范：
+如果是第 2 轮及以后，加 `--previous-workspace <workspace>/iteration-<N-1>`。
+
+无图形/远程环境：使用 `--static <output_path>` 生成静态 HTML。用户点击提交后会下载 `feedback.json`，再拷回 workspace。
+
+5. **通知用户评审入口**  
+明确告诉用户：
+
+- `Outputs` 看样例输出并填写反馈
+- `Benchmark` 看量化对比
+
+### Step 5：读取反馈并收尾
+
+用户评审完成后读取 `feedback.json`，优先处理有明确投诉的用例；空反馈视为通过。
+
+结束后关闭 viewer：
 
 ```bash
-scripts/package_skill.py <path/to/skill-folder> ./dist
+kill $VIEWER_PID 2>/dev/null
 ```
 
-打包脚本将：
+---
 
-1. **验证** skill 自动检查：
+## 三、迭代改进（核心）
 
-   - YAML frontmatter 格式和必需字段
-   - Skill 命名约定和目录结构
-   - 描述的完整性和质量
-   - 文件组织和资源引用
+改进时遵守 4 条：
 
-2. **打包** skill（如果验证通过），创建以 skill 命名的 .skill 文件（例如，`my-skill.skill`），其中包含所有文件并维护适当的目录结构以供分发。.skill 文件是带有 .skill 扩展名的 zip 文件。
+1. **从反馈提炼可泛化规则**，不要只修当前样例
+2. **保持 prompt 精简**，删掉“高成本低收益”指令
+3. **解释为什么**，让模型理解意图而不是死记规则
+4. **发现重复劳动就产品化**：多次重复写出的 helper 脚本应沉淀到 `scripts/`
 
-如果验证失败，脚本将报告错误并退出而不创建包。修复任何验证错误并再次运行打包命令。
+迭代循环：
 
-### 步骤 6：迭代
+1. 修改 skill
+2. 在 `iteration-(N+1)` 重新跑全部测试与 baseline
+3. 用 `--previous-workspace` 再开 viewer
+4. 用户评审
+5. 再迭代
 
-测试 skill 后，用户可能会要求改进。这通常在使用 skill 后立即发生，并带有关于 skill 如何执行的新鲜上下文。
+停止条件：
 
-**迭代工作流程：**
+- 用户明确满意
+- 反馈基本为空
+- 连续迭代无显著增益
 
-1. 在实际任务上使用 skill
-2. 注意困难或低效率
-3. 确定应如何更新 SKILL.md 或捆绑资源
-4. 实施更改并再次测试
+---
+
+## 四、进阶：盲测对比（可选）
+
+需要更严格比较两个版本时：
+
+- 读 `agents/comparator.md`
+- 让独立 agent 在不知来源前提下比较输出
+- 再用 `agents/analyzer.md` 分析胜因
+
+多数场景下，人审 + benchmark 已够用。
+
+---
+
+## 五、Description 触发优化
+
+`SKILL.md` frontmatter 的 `description` 决定触发概率。建议在 skill 稳定后再做。
+
+### Step 1：构造触发评测集
+
+准备 20 条 query（建议 8-10 条应触发 + 8-10 条不应触发）：
+
+```json
+[
+  {"query": "the user prompt", "should_trigger": true},
+  {"query": "another prompt", "should_trigger": false}
+]
+```
+
+质量标准：
+
+- 贴近真实用户输入（路径、字段名、上下文、错别字/口语都可）
+- 负例要“近邻混淆”，不是明显无关句子
+- 多做边界样例，少做教科书样例
+
+### Step 2：让用户审阅 query
+
+用模板 `assets/eval_review.html`：
+
+1. 读取模板
+2. 替换占位符：
+   - `__EVAL_DATA_PLACEHOLDER__`
+   - `__SKILL_NAME_PLACEHOLDER__`
+   - `__SKILL_DESCRIPTION_PLACEHOLDER__`
+3. 写到临时 HTML（如 `/tmp/eval_review_<skill>.html`）并打开
+4. 用户导出 `eval_set.json`
+5. 从 `~/Downloads` 读取最新导出文件
+
+### Step 3：跑自动优化循环
+
+后台执行：
+
+```bash
+python -m scripts.run_loop \
+  --eval-set <path-to-trigger-eval.json> \
+  --skill-path <path-to-skill> \
+  --model <model-id-powering-this-session> \
+  --max-iterations 5 \
+  --verbose
+```
+
+要点：
+
+- 训练/测试拆分：60%/40%
+- 每条 query 跑 3 次统计触发率
+- 结果用 test score 选 `best_description`，避免过拟合 train
+
+执行期间需定期向用户同步迭代进度与得分变化。
+
+### Step 4：应用结果
+
+- 用 `best_description` 回写 SKILL.md
+- 向用户展示 before/after 与评分变化
+
+### 触发机制补充
+
+技能只会在 Claude 认为“有必要调用 skill”时触发。简单一步请求即使语义匹配，也可能不触发。  
+因此触发评测 query 要足够“复杂且值得调用 skill”。
+
+---
+
+## 六、打包交付（可选）
+
+如环境支持，执行：
+
+```bash
+python -m scripts.package_skill <path/to/skill-folder>
+```
+
+然后返回 `.skill` 产物路径给用户。
+
+---
+
+## 七、Claude.ai 适配
+
+在 Claude.ai（无子任务并发）场景：
+
+- 测试用例改为串行执行
+- 可跳过 baseline 对照
+- 无法开浏览器时，在对话里直接展示结果并收集反馈
+- 定量 benchmark 可降级，优先做人审
+- `run_loop.py/run_eval.py` 依赖 CLI 能力，受环境限制时可跳过
+
+---
+
+## 八、Cowork 适配
+
+在 Cowork 场景：
+
+- 可使用子任务并行（严重超时时可降级串行）
+- 无显示环境时必须使用 `generate_review.py --static`
+- 反馈文件通过下载获得后，放回 workspace 继续下一轮
+- `run_loop.py` / `run_eval.py` 通常可用，建议放在技能收敛后执行
+- 不要忘记：先生成 viewer 给人审，再做你自己的深入分析
+
+---
+
+## 九、参考文件
+
+`agents/`：
+
+- `agents/grader.md`：断言评分规范
+- `agents/comparator.md`：盲测比较流程
+- `agents/analyzer.md`：benchmark 诊断方法
+
+`references/`：
+
+- `references/schemas.md`：`evals.json`、`grading.json`、`benchmark.json` 等结构定义
+
+---
+
+## 十、核心闭环（再强调）
+
+- 明确 skill 目标
+- 起草或修改 skill
+- 运行测试（with-skill + baseline）
+- 产出 benchmark + viewer，先让用户评审
+- 依据反馈迭代
+- 收敛后再做 description 优化与打包
+
