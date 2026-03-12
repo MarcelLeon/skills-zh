@@ -1,197 +1,243 @@
 ---
 name: docx
-description: "全面的文档创建、编辑和分析功能，支持修订追踪、评论、格式保留和文本提取。当 Claude 需要处理专业文档（.docx 文件）时使用，包括：(1) 创建新文档，(2) 修改或编辑内容，(3) 使用修订追踪，(4) 添加评论，或任何其他文档任务"
+description: "当用户需要创建、读取、编辑或转换 Word 文档（.docx）时必须使用本技能。触发场景包括：提到 Word/docx、报告/备忘录/正式函件输出、目录和页眉页脚、批注或修订模式、替换文档内容、插入或替换图片、从 docx 提取结构化内容等。若目标交付物是 .docx，本技能应优先触发。不要用于 PDF、电子表格、Google Docs API 或无关编程任务。"
 license: Proprietary. LICENSE.txt has complete terms
 ---
 
-# DOCX 创建、编辑和分析
+# DOCX 创建、编辑与分析
 
-## 概述
+## 概览
 
-用户可能会要求您创建、编辑或分析 .docx 文件的内容。.docx 文件本质上是一个包含 XML 文件和其他资源的 ZIP 存档，您可以读取或编辑。您有不同的工具和工作流程可用于不同的任务。
+`.docx` 本质上是 ZIP 包内的一组 XML。  
+可分三类任务：
 
-## 工作流程决策树
+- 新建文档：用 `docx-js`
+- 编辑现有文档：`unpack -> edit XML -> pack`
+- 读取/检查：`pandoc`、`unpack`、渲染图片核验
 
-### 读取/分析内容
-使用下面的"文本提取"或"原始 XML 访问"部分
+## 快速参考
 
-### 创建新文档
-使用"创建新 Word 文档"工作流程
+| 任务 | 推荐方式 |
+|------|----------|
+| 读取/分析正文 | `pandoc` 或解包看 XML |
+| 新建 DOCX | `docx-js` + `scripts/office/validate.py` |
+| 修改现有 DOCX | `scripts/office/unpack.py` -> XML 编辑 -> `scripts/office/pack.py` |
 
-### 编辑现有文档
-- **您自己的文档 + 简单更改**
-  使用"基本 OOXML 编辑"工作流程
-
-- **他人的文档**
-  使用**"修订追踪工作流程"**（推荐默认）
-
-- **法律、学术、商业或政府文档**
-  使用**"修订追踪工作流程"**（必需）
-
-## 读取和分析内容
-
-### 文本提取
-如果您只需要读取文档的文本内容，应该使用 pandoc 将文档转换为 markdown。Pandoc 为保留文档结构提供了出色的支持，并可以显示修订追踪：
+### `.doc` 转 `.docx`
 
 ```bash
-# 将文档转换为带修订追踪的 markdown
-pandoc --track-changes=all path-to-file.docx -o output.md
-# 选项：--track-changes=accept/reject/all
+python scripts/office/soffice.py --headless --convert-to docx document.doc
 ```
 
-### 原始 XML 访问
-您需要原始 XML 访问以处理：评论、复杂格式、文档结构、嵌入媒体和元数据。对于这些功能中的任何一个，您都需要解包文档并读取其原始 XML 内容。
+### 读取内容
 
-#### 解包文件
-`python ooxml/scripts/unpack.py <office_file> <output_directory>`
-
-#### 关键文件结构
-* `word/document.xml` - 主文档内容
-* `word/comments.xml` - 在 document.xml 中引用的评论
-* `word/media/` - 嵌入的图像和媒体文件
-* 修订追踪使用 `<w:ins>`（插入）和 `<w:del>`（删除）标签
-
-## 创建新 Word 文档
-
-从头开始创建新 Word 文档时，使用 **docx-js**，它允许您使用 JavaScript/TypeScript 创建 Word 文档。
-
-### 工作流程
-1. **必须 - 完整读取文件**：从头到尾完整阅读 [`docx-js.md`](docx-js.md)（约 500 行）。**读取此文件时绝不要设置任何范围限制。** 在继续创建文档之前，请阅读完整的文件内容以了解详细的语法、关键格式规则和最佳实践。
-2. 使用 Document、Paragraph、TextRun 组件创建 JavaScript/TypeScript 文件（您可以假设所有依赖项已安装，如果没有，请参阅下面的依赖项部分）
-3. 使用 Packer.toBuffer() 导出为 .docx
-
-## 编辑现有 Word 文档
-
-编辑现有 Word 文档时，使用 **Document 库**（用于 OOXML 操作的 Python 库）。该库自动处理基础设施设置，并提供文档操作方法。对于复杂场景，您可以通过该库直接访问底层 DOM。
-
-### 工作流程
-1. **必须 - 完整读取文件**：从头到尾完整阅读 [`ooxml.md`](ooxml.md)（约 600 行）。**读取此文件时绝不要设置任何范围限制。** 阅读完整的文件内容以了解 Document 库 API 和用于直接编辑文档文件的 XML 模式。
-2. 解包文档：`python ooxml/scripts/unpack.py <office_file> <output_directory>`
-3. 使用 Document 库创建并运行 Python 脚本（参见 ooxml.md 中的"Document 库"部分）
-4. 打包最终文档：`python ooxml/scripts/pack.py <input_directory> <office_file>`
-
-Document 库为常见操作提供高级方法，为复杂场景提供直接 DOM 访问。
-
-## 文档审阅的修订追踪工作流程
-
-此工作流程允许您在实现到 OOXML 之前使用 markdown 规划全面的修订追踪。**关键**：对于完整的修订追踪，您必须系统地实施所有更改。
-
-**批处理策略**：将相关更改分组为 3-10 个更改的批次。这使调试可管理，同时保持效率。在继续下一批之前测试每一批。
-
-**原则：最小、精确的编辑**
-实施修订追踪时，仅标记实际更改的文本。重复未更改的文本会使编辑更难审阅，并显得不专业。将替换分解为：[未更改的文本] + [删除] + [插入] + [未更改的文本]。通过从原始中提取 `<w:r>` 元素并重用它来保留未更改文本的原始 run 的 RSID。
-
-示例 - 将句子中的"30天"更改为"60天"：
-```python
-# 不好 - 替换整个句子
-'<w:del><w:r><w:delText>期限为30天。</w:delText></w:r></w:del><w:ins><w:r><w:t>期限为60天。</w:t></w:r></w:ins>'
-
-# 好 - 仅标记更改的内容，为未更改的文本保留原始 <w:r>
-'<w:r w:rsidR=\"00AB12CD\"><w:t>期限为 </w:t></w:r><w:del><w:r><w:delText>30</w:delText></w:r></w:del><w:ins><w:r><w:t>60</w:t></w:r></w:ins><w:r w:rsidR=\"00AB12CD\"><w:t> 天。</w:t></w:r>'
-```
-
-### 修订追踪工作流程
-
-1. **获取 markdown 表示**：将文档转换为保留修订追踪的 markdown：
-   ```bash
-   pandoc --track-changes=all path-to-file.docx -o current.md
-   ```
-
-2. **识别并分组更改**：审阅文档并识别所需的所有更改，将它们组织成逻辑批次：
-
-   **定位方法**（用于在 XML 中查找更改）：
-   - 部分/标题编号（例如，"第 3.2 节"、"第四条"）
-   - 段落标识符（如果编号）
-   - 具有唯一周围文本的 Grep 模式
-   - 文档结构（例如，"第一段"、"签名块"）
-   - **不要使用 markdown 行号** - 它们不映射到 XML 结构
-
-   **批次组织**（每批分组 3-10 个相关更改）：
-   - 按部分："批次 1：第 2 节修订"、"批次 2：第 5 节更新"
-   - 按类型："批次 1：日期更正"、"批次 2：当事人名称更改"
-   - 按复杂性：从简单的文本替换开始，然后处理复杂的结构更改
-   - 顺序："批次 1：第 1-3 页"、"批次 2：第 4-6 页"
-
-3. **读取文档并解包**：
-   - **必须 - 完整读取文件**：从头到尾完整阅读 [`ooxml.md`](ooxml.md)（约 600 行）。**读取此文件时绝不要设置任何范围限制。** 特别注意"Document 库"和"修订追踪模式"部分。
-   - **解包文档**：`python ooxml/scripts/unpack.py <file.docx> <dir>`
-   - **记下建议的 RSID**：解包脚本将建议用于修订追踪的 RSID。复制此 RSID 以在步骤 4b 中使用。
-
-4. **分批实施更改**：将更改逻辑分组（按部分、按类型或按接近程度），并在单个脚本中一起实施它们。这种方法：
-   - 使调试更容易（更小的批次 = 更容易隔离错误）
-   - 允许增量进度
-   - 保持效率（3-10 个更改的批次大小效果很好）
-
-   **建议的批次分组：**
-   - 按文档部分（例如，"第 3 节更改"、"定义"、"终止条款"）
-   - 按更改类型（例如，"日期更改"、"当事人名称更新"、"法律术语替换"）
-   - 按接近程度（例如，"第 1-3 页的更改"、"文档前半部分的更改"）
-
-   对于每批相关更改：
-
-   **a. 将文本映射到 XML**：在 `word/document.xml` 中 Grep 文本以验证文本如何在 `<w:r>` 元素之间拆分。
-
-   **b. 创建并运行脚本**：使用 `get_node` 查找节点，实施更改，然后 `doc.save()`。参见 ooxml.md 中的**"Document 库"**部分的模式。
-
-   **注意**：在编写脚本之前，始终立即 grep `word/document.xml` 以获取当前行号并验证文本内容。每次脚本运行后行号都会更改。
-
-5. **打包文档**：所有批次完成后，将解包的目录转换回 .docx：
-   ```bash
-   python ooxml/scripts/pack.py unpacked reviewed-document.docx
-   ```
-
-6. **最终验证**：对完整文档进行全面检查：
-   - 将最终文档转换为 markdown：
-     ```bash
-     pandoc --track-changes=all reviewed-document.docx -o verification.md
-     ```
-   - 验证所有更改都已正确应用：
-     ```bash
-     grep "原始短语" verification.md  # 不应找到
-     grep "替换短语" verification.md  # 应该找到
-     ```
-   - 检查是否引入了意外更改
-
-
-## 将文档转换为图像
-
-要直观地分析 Word 文档，请使用两步过程将其转换为图像：
-
-1. **将 DOCX 转换为 PDF**：
-   ```bash
-   soffice --headless --convert-to pdf document.docx
-   ```
-
-2. **将 PDF 页面转换为 JPEG 图像**：
-   ```bash
-   pdftoppm -jpeg -r 150 document.pdf page
-   ```
-   这将创建类似 `page-1.jpg`、`page-2.jpg` 等的文件。
-
-选项：
-- `-r 150`：将分辨率设置为 150 DPI（调整质量/大小平衡）
-- `-jpeg`：输出 JPEG 格式（如果需要，使用 `-png` 输出 PNG）
-- `-f N`：要转换的第一页（例如，`-f 2` 从第 2 页开始）
-- `-l N`：要转换的最后一页（例如，`-l 5` 在第 5 页停止）
-- `page`：输出文件的前缀
-
-特定范围的示例：
 ```bash
-pdftoppm -jpeg -r 150 -f 2 -l 5 document.pdf page  # 仅转换第 2-5 页
+# 含修订痕迹的文本导出
+pandoc --track-changes=all document.docx -o output.md
+
+# 读取原始 XML
+python scripts/office/unpack.py document.docx unpacked/
 ```
 
-## 代码风格指南
-**重要**：为 DOCX 操作生成代码时：
-- 编写简洁的代码
-- 避免冗长的变量名和冗余操作
-- 避免不必要的 print 语句
+### 渲染成图片做视觉检查
 
-## 依赖项
+```bash
+python scripts/office/soffice.py --headless --convert-to pdf document.docx
+pdftoppm -jpeg -r 150 document.pdf page
+```
 
-所需的依赖项（如果不可用则安装）：
+### 一键接受全部修订
 
-- **pandoc**：`sudo apt-get install pandoc`（用于文本提取）
-- **docx**：`npm install -g docx`（用于创建新文档）
-- **LibreOffice**：`sudo apt-get install libreoffice`（用于 PDF 转换）
-- **Poppler**：`sudo apt-get install poppler-utils`（用于 pdftoppm 将 PDF 转换为图像）
-- **defusedxml**：`pip install defusedxml`（用于安全的 XML 解析）
+```bash
+python scripts/accept_changes.py input.docx output.docx
+```
+
+---
+
+## 新建文档（docx-js）
+
+先安装：`npm install -g docx`
+
+### 基础骨架
+
+```javascript
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, ImageRun,
+        Header, Footer, AlignmentType, PageOrientation, LevelFormat, ExternalHyperlink,
+        InternalHyperlink, Bookmark, FootnoteReferenceRun, PositionalTab,
+        PositionalTabAlignment, PositionalTabRelativeTo, PositionalTabLeader,
+        TabStopType, TabStopPosition, Column, SectionType,
+        TableOfContents, HeadingLevel, BorderStyle, WidthType, ShadingType,
+        VerticalAlign, PageNumber, PageBreak } = require('docx');
+
+const doc = new Document({ sections: [{ children: [/* content */] }] });
+Packer.toBuffer(doc).then(buffer => fs.writeFileSync("doc.docx", buffer));
+```
+
+### 生成后必须校验
+
+```bash
+python scripts/office/validate.py doc.docx
+```
+
+校验失败时：解包修 XML 再回包，不要直接忽略。
+
+### 页面尺寸（关键）
+
+`docx-js` 默认 A4。若是美式文档，要显式设 US Letter：
+
+```javascript
+sections: [{
+  properties: {
+    page: {
+      size: { width: 12240, height: 15840 }, // 8.5 x 11 inch (DXA)
+      margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } // 1 inch
+    }
+  },
+  children: []
+}]
+```
+
+横向模式要点：传入短边 `width`、长边 `height`，再设 `orientation: PageOrientation.LANDSCAPE`，库会自动交换。
+
+### 样式与标题
+
+- 默认字体建议 Arial（跨平台稳定）
+- 覆盖内置标题样式时，`id` 必须精确：`Heading1`、`Heading2`
+- 目录依赖 `outlineLevel`（H1=0, H2=1）
+
+### 列表（禁止手写 Unicode 项目符号）
+
+- 错误：在文本里直接写 `•`
+- 正确：用 `numbering + LevelFormat.BULLET`
+
+### 表格（最易踩坑）
+
+- 必须同时设置：表级 `columnWidths` + 单元格 `width`
+- 表格宽度必须等于 `columnWidths` 总和
+- 始终用 `WidthType.DXA`，不要用百分比（Google Docs 兼容性差）
+- `shading` 使用 `ShadingType.CLEAR`，不要 `SOLID`
+- 给单元格加 `margins` 作为内边距，提升可读性
+
+### 图片
+
+`ImageRun` 必须写 `type`（png/jpg/svg 等）且补齐 `altText`。
+
+### 分页 / 超链接 / 脚注 / 制表位 / 多栏 / 目录 / 页眉页脚
+
+这些场景按 `docx` 官方 API 正规建模，不要用“文本模拟布局”的捷径。  
+尤其注意：
+
+- `PageBreak` 必须放在 `Paragraph` 内
+- 内链先建 `Bookmark` 再 `InternalHyperlink`
+- 目录使用 `TableOfContents`，标题必须来自 `HeadingLevel`
+- 双栏页脚优先用 tab stops，不要用 table 伪造
+
+### docx-js 硬规则（请默认遵守）
+
+- 必须显式设置页面尺寸
+- 禁止在段内用 `\n` 代替段落
+- 禁止手写 Unicode bullets
+- 表格只用 DXA 宽度体系
+- 不要用表格充当分割线
+
+---
+
+## 编辑现有文档（三步必须全走）
+
+### Step 1: 解包
+
+```bash
+python scripts/office/unpack.py document.docx unpacked/
+```
+
+该脚本会做 pretty-print、run 合并和智能引号实体处理。需要时可 `--merge-runs false`。
+
+### Step 2: 改 XML
+
+编辑 `unpacked/word/` 下文件。  
+默认作者名使用 `Claude`（除非用户要求其他名字）。
+
+- 直接用编辑工具做字符串替换，不要无谓再写一次 Python 脚本
+- 新增文本涉及引号/撇号时，用智能引号实体：
+
+```xml
+<w:t>Here&#x2019;s a quote: &#x201C;Hello&#x201D;</w:t>
+```
+
+| Entity | 字符 |
+|--------|------|
+| `&#x2018;` | ‘ |
+| `&#x2019;` | ’ |
+| `&#x201C;` | “ |
+| `&#x201D;` | ” |
+
+批注可用脚本生成样板：
+
+```bash
+python scripts/comment.py unpacked/ 0 "Comment text with &amp; and &#x2019;"
+python scripts/comment.py unpacked/ 1 "Reply text" --parent 0
+python scripts/comment.py unpacked/ 0 "Text" --author "Custom Author"
+```
+
+### Step 3: 回包
+
+```bash
+python scripts/office/pack.py unpacked/ output.docx --original document.docx
+```
+
+默认包含校验与自动修复。`--validate false` 可跳过，但不建议常态使用。
+
+自动修复覆盖：
+
+- `durableId` 越界
+- `<w:t>` 缺少 `xml:space="preserve"`（有前后空白时）
+
+不会自动修复：
+
+- XML 结构损坏
+- 元素顺序/嵌套非法
+- 关系丢失等语义错误
+
+---
+
+## XML 参考（常用高风险点）
+
+### Schema 顺序与空白
+
+- `<w:pPr>` 内元素顺序要合法：`pStyle -> numPr -> spacing -> ind -> jc -> rPr`
+- 文本有前后空白时必须 `xml:space="preserve"`
+- RSID 使用 8 位十六进制
+
+### 修订模式（Tracked Changes）
+
+- 插入用 `<w:ins>`，删除用 `<w:del>`
+- `<w:del>` 内文本必须是 `<w:delText>`，不是 `<w:t>`
+- 只标记最小变更片段，避免整段重写
+- 删除整段时，需在 `<w:pPr><w:rPr>` 补 `<w:del/>`，否则接受修订后会残留空段落
+- 拒绝他人插入：在其 `<w:ins>` 内嵌你的 `<w:del>`
+- 恢复他人删除：保留对方 `<w:del>`，再新增你的 `<w:ins>`
+
+### 批注（Comments）
+
+- `commentRangeStart/End` 是 `<w:p>` 的子节点，不可塞进 `<w:r>`
+- 回复链路用 `--parent` 建立层级
+- 在 `document.xml` 同步插入 `commentReference`
+
+### 图片嵌入
+
+必须四步齐全：
+
+1. `word/media/` 放入图片
+2. `word/_rels/document.xml.rels` 增加 relationship
+3. `[Content_Types].xml` 增加扩展名映射
+4. `document.xml` 中用 `r:embed` 引用对应 `rId`
+
+---
+
+## 依赖
+
+- `pandoc`：文本抽取
+- `docx`：`npm install -g docx`
+- LibreOffice：转换与兼容渲染（通过 `scripts/office/soffice.py` 适配沙箱）
+- Poppler：`pdftoppm` 出图核验
+
