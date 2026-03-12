@@ -335,6 +335,7 @@ python -m scripts.run_loop \
 - 训练/测试拆分：60%/40%
 - 每条 query 跑 3 次统计触发率
 - 结果用 test score 选 `best_description`，避免过拟合 train
+- 描述优化脚本通过当前会话的 `claude -p` 执行，不需要单独配置 `ANTHROPIC_API_KEY`
 
 执行期间需定期向用户同步迭代进度与得分变化。
 
@@ -371,6 +372,7 @@ python -m scripts.package_skill <path/to/skill-folder>
 - 无法开浏览器时，在对话里直接展示结果并收集反馈
 - 定量 benchmark 可降级，优先做人审
 - `run_loop.py/run_eval.py` 依赖 CLI 能力，受环境限制时可跳过
+- 若目标是“更新已有 skill”而非新建：保持原 skill 名称不变；若安装路径只读，先复制到 `/tmp/<skill-name>/` 再编辑与打包
 
 ---
 
@@ -383,6 +385,7 @@ python -m scripts.package_skill <path/to/skill-folder>
 - 反馈文件通过下载获得后，放回 workspace 继续下一轮
 - `run_loop.py` / `run_eval.py` 通常可用，建议放在技能收敛后执行
 - 不要忘记：先生成 viewer 给人审，再做你自己的深入分析
+- 如果是更新已有 skill，同样遵循 Claude.ai 章节中的“保留原名称 + 先复制到可写目录”规则
 
 ---
 
@@ -408,4 +411,3 @@ python -m scripts.package_skill <path/to/skill-folder>
 - 产出 benchmark + viewer，先让用户评审
 - 依据反馈迭代
 - 收敛后再做 description 优化与打包
-
