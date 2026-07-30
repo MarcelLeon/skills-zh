@@ -1,11 +1,11 @@
 {
-  "name": "anthropic-agent-skills",
+  "name": "skills-zh",
   "owner": {
     "name": "Keith Lazuka",
     "email": "klazuka@anthropic.com"
   },
   "metadata": {
-    "description": "Anthropic example skills",
+    "description": "Anthropic Agent Skills 的中文本土化适配版本",
     "version": "1.0.0"
   },
   "plugins": [
@@ -39,6 +39,15 @@
         "./skills/theme-factory",
         "./skills/web-artifacts-builder",
         "./skills/webapp-testing"
+      ]
+    },
+    {
+      "name": "claude-api",
+      "description": "面向中文开发者的 Claude API、SDK、Agent 与模型迁移参考",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/claude-api"
       ]
     }
   ]

@@ -1,161 +1,146 @@
 ---
 name: pptx
-description: "只要任务与 .pptx 有关（输入、输出或两者都有），就应触发本技能。包括：创建演示文稿、读取提取内容、修改现有模板、合并拆分页面、处理版式/讲稿/批注等。用户提到 deck/slides/presentation 或具体 .pptx 文件时，即便最终用途是摘要或邮件，也应使用本技能。"
+description: "只要 .pptx 或 .potx 参与任务，就必须使用本技能，无论它是输入、输出还是中间材料。中文触发包括：做汇报 PPT、路演稿、培训课件、读/改现有演示文稿、套公司模板、合并拆分页面、调整母版布局、讲稿备注或批注。用户只说“做几页汇报”“把方案整理成 slides”，只要需要真正交付或读取幻灯片也应触发；仅讨论演讲提纲且不操作 PPT 文件时不触发。"
 license: Proprietary. LICENSE.txt has complete terms
 ---
 
-# PPTX 技能
+# PPTX 创建、编辑与分析
 
-## 快速参考
+`.pptx`/`.potx` 是包含 OOXML 的 ZIP 包。按任务选择：
 
-| 任务 | 指引 |
-|------|------|
-| 读取/分析内容 | `python -m markitdown presentation.pptx` |
-| 在现有模板上编辑 | 先读 [editing.md](editing.md) |
-| 从零创建新稿 | 先读 [pptxgenjs.md](pptxgenjs.md) |
+| 任务 | 方法 |
+| --- | --- |
+| 新建演示稿 | 使用 `pptxgenjs` |
+| 修改现有稿或模板 | 解包 → 调整结构 → 编辑 XML → 清理 → 压缩 |
+| 读取内容 | `markitdown deck.pptx` |
+| 观察全稿结构 | `python scripts/thumbnail.py deck.pptx deck-thumbs` |
 
----
+脚本路径均相对于本 Skill 目录。
 
-## 读取内容
+## 中文任务 few-shot
 
-```bash
-# 文本抽取
-python -m markitdown presentation.pptx
+**输入：**“把这份 Data Agent 技术方案做成 12 页中文汇报，用公司模板，老板 10 分钟能讲完。”
 
-# 幻灯片缩略图总览
-python scripts/thumbnail.py presentation.pptx
+**执行：**先提炼一条可讲述主线，再用缩略图选择不同模板布局；控制每页一个判断，保留公司母版，补讲稿备注，最后做内容、视觉和文件结构三轮检查。
 
-# 原始 XML
-python scripts/office/unpack.py presentation.pptx unpacked/
-```
+**输入：**“roadmap.pptx 太密了，帮我重排但不要改事实。”
 
----
+**执行：**先抽取文字和缩略图，建立事实清单；只重组层级和布局，不替换数据；输出前逐页渲染并核对原始事实。
 
-## 编辑工作流
+## 可用脚本
 
-完整细节在 [editing.md](editing.md)。默认执行顺序：
-
-1. 用 `thumbnail.py` 先理解模板结构与视觉密度
-2. `unpack -> 调整页面结构/对象 -> 内容替换 -> clean -> pack`
-3. 出图后做人眼 QA，再回改
-
----
+| 脚本 | 用途 |
+| --- | --- |
+| `scripts/thumbnail.py deck.pptx prefix` | 生成带页码的全稿缩略图网格 |
+| `scripts/add_slide.py unpacked/ slide2.xml --after slideN.xml` | 正确复制页面或 layout，并登记所有关系 |
+| `scripts/clean.py unpacked/` | 在页面列表确定后清理孤立页面、媒体和关系 |
+| `scripts/office/validate.py deck.pptx --original src.pptx` | 校验 schema、关系、content type、图表和页面 |
+| `scripts/office/soffice.py --headless --convert-to pdf deck.pptx` | 在沙箱环境稳定调用 LibreOffice |
 
 ## 从零创建
 
-完整约束在 [pptxgenjs.md](pptxgenjs.md)。  
-没有模板且用户要全新设计时，按该文档执行。
+`pptxgenjs` 通常已预装。先直接 `require("pptxgenjs")`，只有导入失败才安装。
 
----
+高风险规则：
 
-## 设计原则（必须避免“流水线 AI 幻灯片”）
+- 添加页面前先设置 `pres.layout`。`LAYOUT_16x9` 是 10 × 5.625 英寸，`LAYOUT_WIDE` 是 13.333 × 7.5 英寸。
+- 颜色只写 6 位十六进制且不带 `#`；透明度使用对应属性，不写 8 位颜色。
+- 不复用会被 pptxgenjs 原地修改的 options/shadow 对象。
+- 阴影 `offset >= 0`；向上投影使用正 offset 配合 `angle: 270`。
+- 文本对齐敏感时显式设置 `margin: 0`。
+- 列表使用 `bullet: true`，不要手写 `•`。
+- 每个输出文件使用独立的 `new pptxgen()` 实例。
+- 讲稿备注使用 `slide.addNotes()`，不要放成页面文本框。
+- PowerPoint 有原生图表时使用 `addChart()`；只有原生不支持的 Sankey、网络图等才转图片。
+- stacked chart 的 `dataLabelPosition` 只能用 `ctr`、`inEnd`、`inBase`；错误配置会损坏文件。
+- 组合图使用次坐标轴时，必须同时声明两组 `valAxes` 和 `catAxes`。
+- 每次 `writeFile()` 后立即运行 `validate.py`，从生成脚本修问题，不手改打包后的 XML。
 
-### 开始前
+## 编辑现有演示稿
 
-- 先选“有主题感”的配色，不要默认蓝白模板
-- 视觉权重遵循 60/30/10（主色/辅色/强调）
-- 统一视觉母题（例如圆角卡片、图标圆章、单侧粗边）并贯穿全稿
+先生成缩略图并传入专属前缀，避免不同演示稿互相覆盖：
 
-### 版式与信息组织
+```bash
+python scripts/thumbnail.py template.pptx template-thumbs
+python -m markitdown template.pptx
+```
 
-每页至少有一个视觉锚点（图、图标、图表、几何块），不要纯文字页。
+结构编辑工作流：
 
-常用结构：
+```bash
+python3 -c "import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall('unpacked')" deck.pptx
+find unpacked -type l -delete
+python scripts/add_slide.py unpacked/ slide2.xml --after slide2.xml
+# 在 ppt/presentation.xml 的 <p:sldIdLst> 调整顺序或删除页面
+python scripts/clean.py unpacked/
+# 编辑 ppt/slides/slideN.xml
+(cd unpacked && rm -f ../output.pptx && zip -Xr ../output.pptx .)
+python scripts/office/validate.py output.pptx --original deck.pptx
+```
 
-- 左文右图双栏
-- 图标 + 标题 + 描述条目
-- 2x2/2x3 卡片网格
-- 半屏大图 + 信息覆盖
+顺序必须是：先新增/删除/排序，再改页面内容。`add_slide.py` 会复制源页，若先编辑再复制，会意外克隆已改内容。
 
-数据展示建议：
+不要手工复制 `slideN.xml`。一个页面还涉及 presentation、rels、content type、notes 和媒体关系。
 
-- 大数字 KPI（60-72pt）
-- 对比列（before/after、方案 A/B）
-- 时间线或流程箭头
+修改模板时：
 
-### 排版与间距
+- 模板槽位多于真实内容时，删除整个对象组，不只清空文字。
+- 每个列表项使用独立 `<a:p>`。
+- 替换文本时修改已有 run 的文本，避免 `text_frame.text = ...` 抹掉格式。
+- 中文文本前后有空格时使用 `xml:space="preserve"`。
+- 复用模板图标优先复制已有页面或 layout，不重新截图成低清位图。
 
-- 标题 36-44pt，正文 14-16pt，说明 10-12pt
-- 最小页边距 0.5"
-- 区块间距统一 0.3"-0.5"
+## 中文汇报设计
 
-### 常见反模式（禁止）
+先确定受众、会议时长和单一结论，再设计页面。
 
-- 每页都同一版式
-- 正文居中排（正文与列表应左对齐）
-- 字号层级不明显
-- 低对比文本或低对比图标
-- 只做“标题 + 子弹点”
-- 用标题下划线装饰（典型 AI 痕迹）
+- 中文管理汇报优先“结论式标题”，标题直接表达本页判断，不写“项目背景”这类空标签。
+- 一页只承担一个主要认知任务；长句拆为短段，正文避免字号过小。
+- 公司模板、品牌色和既有版式优先，不以“设计感”为由破坏统一规范。
+- 数据页优先原生图表和大数字；流程页用真正有方向的流程，不用无意义 01/02/03 装饰。
+- 中文字体必须检查目标机器可用性；不要依赖只在本机安装的字体。
+- 视觉母题只选一个，避免卡片、渐变、发光、玻璃效果同时堆叠。
 
----
+### 避免常见 AI 幻灯片
 
-## QA（强制步骤）
+- 每页都是“标题 + 三个圆角卡片”。
+- 白底紫色渐变、随机装饰圆和无信息价值图标。
+- 每页相同版式。
+- 过度居中正文。
+- 把 markdown、代码围栏或项目符号原样贴进页面。
+- 为了填满版面编造数据或口号。
 
-默认假设首版一定有问题，目标是“找 bug”，不是“证明没问题”。
+## 内容与视觉 QA
 
-### 内容 QA
+内容检查：
 
 ```bash
 python -m markitdown output.pptx
+python -m markitdown output.pptx | grep -iE "xxxx|lorem|ipsum|placeholder"
+python scripts/office/validate.py output.pptx
 ```
 
-检查：
-
-- 内容缺失、错别字、顺序错误
-- 模板残留占位词（如 `xxxx`、`lorem ipsum`）
+视觉检查：
 
 ```bash
-python -m markitdown output.pptx | grep -iE "xxxx|lorem|ipsum|this.*(page|slide).*layout"
-```
-
-### 视觉 QA（建议用子代理或独立视角）
-
-先转图片再审：
-
-```bash
+rm -f slide-*.jpg
 python scripts/office/soffice.py --headless --convert-to pdf output.pptx
 pdftoppm -jpeg -r 150 output.pdf slide
+ls -1 "$PWD"/slide-*.jpg
 ```
 
-重点检查：
+逐页检查：
 
-- 重叠、穿插、截断
-- 过密间距与对齐漂移
-- 边缘安全距离不足（< 0.5"）
-- 低对比可读性
-- 占位文本残留
+- 文本重叠、裁切和溢出。
+- 中文字体替换导致的换行变化。
+- 图表标签、单位、图例和数据范围。
+- 页面边缘安全距离。
+- 模板占位文本、虚构数据和无来源断言。
+- 内容主线是否能在用户指定时长内讲完。
 
-### 验证循环
-
-1. 生成 -> 出图 -> 检查
-2. 列问题清单
-3. 修复
-4. 对受影响页面复检
-5. 至少完成一轮“修复 + 回归”后再宣布完成
-
----
-
-## 转图片
-
-```bash
-python scripts/office/soffice.py --headless --convert-to pdf output.pptx
-pdftoppm -jpeg -r 150 output.pdf slide
-```
-
-只重渲某一页：
-
-```bash
-pdftoppm -jpeg -r 150 -f N -l N output.pdf slide-fixed
-```
-
----
+修复后必须重新生成 PDF 和全部页面图片，不能只看旧截图。
 
 ## 依赖
 
-- `pip install "markitdown[pptx]"`：文本抽取
-- `pip install Pillow`：缩略图工具
-- `npm install -g pptxgenjs`：从零生成
-- LibreOffice：通过 `scripts/office/soffice.py` 做 PDF 转换
-- Poppler：`pdftoppm` 导出图片
+`pptxgenjs` · `markitdown[pptx]` · `Pillow` · `defusedxml` · `lxml` · LibreOffice · Poppler
 

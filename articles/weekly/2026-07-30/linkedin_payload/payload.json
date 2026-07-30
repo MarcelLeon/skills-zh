@@ -1,0 +1,15 @@
+{
+  "channel": "linkedin",
+  "title": "Chinese localization for Agent Skills needs an evaluation contract",
+  "body": "I changed how skills-zh is maintained.\n\nThe goal is no longer “translate every English paragraph.” The goal is to make Agent Skills trigger and behave naturally for Chinese users.\n\nThis update reviews the repository against Anthropic upstream commit b29e7cf, adds the claude-api skill, and syncs the latest DOCX/PPTX/XLSX safety and validation changes.\n\nThe localization layer now covers:\n\n- colloquial Chinese trigger phrases;\n- implicit deliverables and mixed Chinese/English wording;\n- realistic Chinese few-shot examples;\n- near-miss prompts that should not trigger;\n- repository-level checks for all 17 skills.\n\nThere are now 51 positive and negative Chinese trigger cases. Minimal DOCX and PPTX artifacts passed the updated validators. XLSX recalculation still times out in the current macOS LibreOffice environment, so it remains an explicit verification gap.\n\nThe next step is a weekly upstream-to-localization loop: detect changes, preserve technical facts, rewrite the Chinese interaction layer, validate, and prepare evidence-backed technical articles.\n\nhttps://github.com/MarcelLeon/skills-zh",
+  "tags": [
+    "AI",
+    "Agents",
+    "DeveloperTools",
+    "OpenSource"
+  ],
+  "links": [
+    "https://github.com/MarcelLeon/skills-zh"
+  ],
+  "images": []
+}

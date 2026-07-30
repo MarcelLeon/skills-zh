@@ -1,0 +1,23 @@
+name: Validate localized skills
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install validation dependency
+        run: python -m pip install -r requirements-dev.txt
+      - name: Validate repository contracts
+        run: python scripts/validate_repository.py
+      - name: Check Python syntax
+        run: python -m compileall -q skills scripts
+      - name: Check shell syntax
+        run: find skills -name '*.sh' -exec bash -n {} +

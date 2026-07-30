@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "skills": {
+    "algorithmic-art": {
+      "should_trigger": [
+        "帮我做一个带随机种子的粒子流场网页，每次输入同一个 seed 都能复现。",
+        "想用 p5.js 生成一幅可交互的算法艺术作品，参数可以现场调。"
+      ],
+      "should_not_trigger": ["帮我找一张抽象艺术图片做文章配图。"]
+    },
+    "brand-guidelines": {
+      "should_trigger": [
+        "把这份活动海报调整成 Anthropic 官方品牌色和字体风格。",
+        "这个页面看起来不像 Claude 品牌，请按官方视觉规范统一一下。"
+      ],
+      "should_not_trigger": ["帮我们自己的茶饮品牌定义一套全新 VI。"]
+    },
+    "canvas-design": {
+      "should_trigger": [
+        "给这场中文技术沙龙做一张可打印的 A3 海报，最后要 PNG 和 PDF。",
+        "我需要一张静态视觉作品，主题是人与 AI 协作，不要套模板。"
+      ],
+      "should_not_trigger": ["帮我实现一个可以编辑海报的 React 页面。"]
+    },
+    "claude-api": {
+      "should_trigger": [
+        "我们 Java 服务要接 Claude API，要求流式输出、工具调用和超时处理，给可运行实现。",
+        "Anthropic 的 prompt caching 为什么一直没命中？帮我检查这段 TypeScript 调用。"
+      ],
+      "should_not_trigger": ["这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。"]
+    },
+    "doc-coauthoring": {
+      "should_trigger": [
+        "我们一起把这份 Data Agent 技术方案从提纲打磨成可评审文档。",
+        "我有一堆零散背景，想跟你协作写成一份 RFC，并验证读者能不能看懂。"
+      ],
+      "should_not_trigger": ["把下面这句话改得更正式一点。"]
+    },
+    "docx": {
+      "should_trigger": [
+        "把这份会议纪要整理成带目录、页码和统一标题样式的 Word 文档。",
+        "请在合同.docx 里用修订模式改付款条款，并给关键改动加批注。"
+      ],
+      "should_not_trigger": ["把这段会议纪要润色一下，直接在聊天里返回 Markdown。"]
+    },
+    "frontend-design": {
+      "should_trigger": [
+        "给国产开发者工具做一个有辨识度的中文落地页，不要紫色渐变 AI 模板。",
+        "这个 React 控制台功能都齐了，但视觉太像默认后台，请重新做设计系统和关键页面。"
+      ],
+      "should_not_trigger": ["只修复这个按钮点击后没有发请求的 bug，不要调整样式。"]
+    },
+    "internal-comms": {
+      "should_trigger": [
+        "把这周项目进展整理成一份给管理层看的 3P 周报。",
+        "线上事故刚恢复，帮我写一份中文事故通报和后续行动项。"
+      ],
+      "should_not_trigger": ["给客户写一封产品报价邮件。"]
+    },
+    "mcp-builder": {
+      "should_trigger": [
+        "我要把公司工单 API 封装成 MCP Server，工具描述要让模型容易选对。",
+        "用 FastMCP 做一个中文知识库检索服务，并设计一组可评测的工具调用样例。"
+      ],
+      "should_not_trigger": ["写一个普通 Flask REST API，不需要给模型调用。"]
+    },
+    "pdf": {
+      "should_trigger": [
+        "提取这份扫描版 PDF 的表格，OCR 后按页保留来源。",
+        "把三份 PDF 合并，加页码和水印，并检查最终渲染效果。"
+      ],
+      "should_not_trigger": ["把这段文字排版成网页，不需要 PDF。"]
+    },
+    "pptx": {
+      "should_trigger": [
+        "用公司模板把这份中文方案做成 12 页汇报 PPT，保留模板母版和讲稿备注。",
+        "分析 roadmap.pptx 每页内容，重排结构并输出一版可评审的演示稿。"
+      ],
+      "should_not_trigger": ["帮我列一个演讲提纲，暂时不需要做幻灯片。"]
+    },
+    "skill-creator": {
+      "should_trigger": [
+        "帮我做一个处理中文招投标文件的 Skill，还要设计触发测试和评测集。",
+        "这个 Skill 经常漏掉口语化请求，请优化 description 并做正反例验证。"
+      ],
+      "should_not_trigger": ["帮我写一个普通 Python 工具函数。"]
+    },
+    "slack-gif-creator": {
+      "should_trigger": [
+        "做一个适合 Slack 表情的 128x128 动图：机器人修完 bug 后比心。",
+        "给团队频道做一个文件小、循环自然的庆祝 GIF。"
+      ],
+      "should_not_trigger": ["给我找一个现成的庆祝表情包链接。"]
+    },
+    "theme-factory": {
+      "should_trigger": [
+        "给这套中文行业报告统一一套沉稳的字体、色板和图表主题。",
+        "把已有 PPT 和网页统一成同一个科技展会主题。"
+      ],
+      "should_not_trigger": ["只把标题颜色改成红色。"]
+    },
+    "web-artifacts-builder": {
+      "should_trigger": [
+        "做一个带路由、筛选和状态管理的 React 数据看板，最终打包成单个 HTML。",
+        "我要一个使用 shadcn 组件的交互式产品演示，不是简单静态页面。"
+      ],
+      "should_not_trigger": ["写一个只有标题和按钮的单文件 HTML。"]
+    },
+    "webapp-testing": {
+      "should_trigger": [
+        "用 Playwright 验证这个本地中文后台的登录、搜索和导出流程，并截图。",
+        "页面偶发白屏，帮我自动复现并收集控制台错误和网络请求。"
+      ],
+      "should_not_trigger": ["给这个后端函数补单元测试。"]
+    },
+    "xlsx": {
+      "should_trigger": [
+        "整理下载目录里的销售台账.xlsx，补毛利率公式、条件格式和汇总图表。",
+        "这份 CSV 表头错位还有脏行，请清洗后交付一个能继续填报的 Excel 模板。"
+      ],
+      "should_not_trigger": ["把数据库查询结果做成一个 HTML 数据看板。"]
+    }
+  }
+}

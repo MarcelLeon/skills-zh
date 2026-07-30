@@ -1,0 +1,22 @@
+---
+title: 大家会如何验证一个中文 Agent Skill 不是“翻译完就算完成”？
+node: create
+links: [https://github.com/MarcelLeon/skills-zh]
+images: []
+---
+
+我在维护 Anthropic Skills 的中文版本时遇到一个问题：逐句翻译很容易验收，但真正的触发效果很难验收。
+
+中文用户通常不会点名 Skill，而是说“把会议纪要整理成带目录的正式 Word”或“下载目录里的销售台账补一下毛利率”。所以这次没有继续做纯翻译，而是给 17 个 Skill 建了三类证据：
+
+1. 中文口语和隐含意图的应触发案例。
+2. 相邻但不应触发的反例。
+3. 执行后的文件/脚本验证。
+
+这次同时对齐了上游 `b29e7cf`，新增 `claude-api`，同步了 DOCX/PPTX/XLSX 的安全和校验更新。仓库级 validator 已能检查 17 个 Skill 的 frontmatter、中文入口、marketplace、同步基线和 51 条正反触发案例。
+
+目前限制也很明确：DOCX/PPTX 的最小产物通过，XLSX 的 LibreOffice 公式回算在当前 macOS 环境仍超时，所以没有宣称全链路通过。
+
+我现在比较纠结的是，触发评测下一步应该优先做哪一层：固定模型的自动触发率 benchmark，还是先扩大真实中文任务样本并做人审？大家在维护 prompt/skill 类资产时，有没有更稳定的回归方法？
+
+项目：https://github.com/MarcelLeon/skills-zh

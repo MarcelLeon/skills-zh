@@ -1,250 +1,129 @@
 ---
 name: xlsx
-description: "当用户任务以电子表格文件为核心输入或输出时必须使用本技能。涵盖 .xlsx/.xlsm/.csv/.tsv 的读取、清洗、修复、建模、公式计算、格式化、图表、模板更新与格式转换。用户只要提到某个表格文件路径并要求处理或产出表格，都应触发本技能。若主要交付物不是电子表格（如 Word/HTML/数据库流水线/Google Sheets API 集成），则不应触发。"
+description: "当电子表格是主要输入或交付物时必须使用本技能。适用于打开、读取、清洗、修复、编辑或创建 .xlsx、.xlsm、.xltx、.csv、.tsv，包括中文销售台账、预算表、排期表、数据清洗、补公式、格式化、图表和模板更新。用户只说“下载目录里那个表”“把脏 CSV 整成 Excel”也应触发。若主要产物是 Word、HTML、独立 Python 脚本、数据库流水线或 Google Sheets API，则不要触发。"
 license: Proprietary. LICENSE.txt has complete terms
----
-
-# 输出要求
-
-## 所有 Excel 文件
-
-### 专业字体
-
-- 除非用户另有要求，统一使用专业字体（如 Arial、Times New Roman）
-
-### 公式错误为零
-
-- 交付前必须无 `#REF!/#DIV/0!/#VALUE!/#N/A/#NAME?`
-
-### 更新现有模板时
-
-- 必须严格继承模板既有风格、结构与约定
-- 不得把“统一标准样式”强压到已有模板上
-- 模板既有规范优先级高于本文件默认建议
-
-## 财务模型补充规范
-
-### 颜色约定（用户或模板未指定时）
-
-- 蓝字 `(0,0,255)`：可调输入/硬编码假设
-- 黑字 `(0,0,0)`：公式计算
-- 绿字 `(0,128,0)`：同工作簿跨表引用
-- 红字 `(255,0,0)`：外部文件链接
-- 黄底 `(255,255,0)`：关键假设或待更新单元格
-
-### 数值格式
-
-- 年份用文本显示：`"2024"`（避免 `2,024`）
-- 金额：`$#,##0`，并在表头写明单位（如 `($mm)`）
-- 零值显示为 `-`（含百分比）
-- 百分比默认 `0.0%`
-- 倍数默认 `0.0x`
-- 负数用括号 `(123)`，不用 `-123`
-
-### 公式构造
-
-- 所有假设放在独立假设区单元格
-- 公式用引用，不写硬编码常数
-- 例：`=B5*(1+$B$6)`，不要 `=B5*1.05`
-
-### 硬编码来源注释
-
-对硬编码值写明来源（旁注/批注均可）：
-
-`Source: [System/Document], [Date], [Reference], [URL]`
-
 ---
 
 # XLSX 创建、编辑与分析
 
-## 概览
+| 任务 | 推荐工具 |
+| --- | --- |
+| 公式、样式、结构 | `openpyxl` |
+| 批量数据读写 | `pandas` |
+| 快速浏览内容 | `markitdown file.xlsx` |
+| 同时读取公式和值 | 分别用默认模式和 `data_only=True` 加载 |
 
-任务通常分为：
+`openpyxl`、`pandas`、`markitdown` 通常已预装。先直接使用，只有导入失败时才安装。脚本路径均相对于本 Skill 目录。
 
-- 数据分析与清洗（优先 pandas）
-- 公式、样式、结构化建模（优先 openpyxl）
-- 回算与错误扫描（必须 `scripts/recalc.py`）
+## 中文场景 few-shot
 
-## 关键要求
+**输入：**“下载目录里的销售台账.xlsx 帮我补毛利率、按区域汇总，再做一张趋势图。”
 
-若文件包含公式，交付前必须执行：
+**执行：**先识别原表字段、输入单元格和既有样式；用公式生成毛利率，用汇总表和原生图表呈现趋势；回算后检查公式错误和关键数字。
+
+**输入：**“把这份错位的 CSV 整成下周继续填报的运营模板。”
+
+**执行：**用 pandas 纠正表头和脏行，输出中文列名清晰的 `.xlsx`；添加“可编辑区域”说明和一行真实格式示例，但不在已有业务表中擅自插入示例数据。
+
+## 每个交付物都要满足
+
+- 用户或既有模板的字段名、sheet 名、格式和公式约定优先。
+- 新建中文表格时选用目标环境可用的专业中文字体；已有表格必须继承原字体。
+- 公式必须写入 Excel，不把 Python 计算结果硬编码成静态值。
+- 所有假设和硬编码数字应在可见位置说明来源；用户提供的数据明确标注“来源：用户提供”。
+- 用户要继续填写的空模板需要短图例和一行格式示例；编辑已有文件时不要擅自添加。
+- 交付前 `recalc.py` 必须达到零公式错误。
+
+## 通用工作流
+
+1. 快速浏览所有 sheet、表头、合并单元格、公式和输入样式。
+2. 明确哪些是输入、公式、跨表引用和外部链接。
+3. 先写 2–3 个代表性公式并核对引用，再批量填充。
+4. 保存后执行回算。
+5. 检查公式正确性、格式、图表范围和中文显示。
+
+## 公式回算
+
+`openpyxl` 只写公式字符串，不产生缓存值。含公式文件必须运行：
 
 ```bash
 python scripts/recalc.py output.xlsx
 ```
 
-说明：
+脚本会原地改写工作簿，并输出 JSON：
 
-- `openpyxl` 只写入公式字符串，不会计算结果
-- `scripts/recalc.py` 会调用 LibreOffice 回算并扫描错误
-- 沙箱环境由 `scripts/office/soffice.py` 自动做兼容配置
+- `status: success`：公式已回算且没有已识别错误。
+- `status: errors_found`：进程仍可能退出 0，必须读取 `total_errors` 和 `error_summary`。
+- 出现 `error` 字段而不是 `status`：没有完成回算。
 
-## 读取与分析（pandas）
+绿色回算只证明公式能求值，不证明业务引用正确。抽查至少 2–3 个关键公式的行列和边界。
 
-```python
-import pandas as pd
+## 公式兼容性
 
-df = pd.read_excel("file.xlsx")                    # 首个 sheet
-all_sheets = pd.read_excel("file.xlsx", sheet_name=None)  # 全部 sheet
+优先使用 `SUMIFS`、`INDEX`、`MATCH`、`IFERROR`、`SUMPRODUCT` 等兼容函数。
 
-df.head()
-df.info()
-df.describe()
+以下函数需要 `_xlfn.` 前缀：`TEXTJOIN`、`CONCAT`、`IFS`、`SWITCH`、`MAXIFS`、`MINIFS`。
 
-df.to_excel("output.xlsx", index=False)
-```
+不要使用当前校验链无法可靠回算的动态数组函数：
 
----
+- `XLOOKUP`
+- `XMATCH`
+- `SORT`
+- `FILTER`
+- `UNIQUE`
+- `SEQUENCE`
 
-## 核心原则：计算必须写在 Excel 公式里
+查找使用 `INDEX`/`MATCH`，排序、筛选和去重在 Python 中完成后再写入单元格。
 
-不要先在 Python 里算完再把值写回去。  
-正确做法是把公式写入单元格，让工作簿可持续重算。
+## openpyxl 高风险点
 
-### 错误示例（禁止）
+- 同时拿公式和值需要加载两次；一次加载无法兼得。
+- `data_only=True` 的工作簿不能保存，否则公式会被静态值替换。
+- 刚由 openpyxl 写出的公式，用 `data_only=True` 读取通常是 `None`；先回算。
+- 合并单元格只能写左上角锚点。
+- `.xlsm` 必须使用 `keep_vba=True`，否则宏会丢失。
+- 含空格的 sheet 名在公式中必须加单引号，如 `='参数 输入'!$B$5`。
+- 修改现有文件时先识别其输入颜色/填充，只写指定区域，不覆盖原公式。
 
-```python
-total = df["Sales"].sum()
-sheet["B10"] = total
+### 外部链接
 
-growth = (df.iloc[-1]["Revenue"] - df.iloc[0]["Revenue"]) / df.iloc[0]["Revenue"]
-sheet["C5"] = growth
-```
+公式如 `='[1]Returns Analysis'!$B$2` 指向外部文件。openpyxl 保存后可能丢失原缓存值，LibreOffice 无法解析时会写入 `#NAME?` 并删除链接。
 
-### 正确示例
+遇到外部链接时：
 
-```python
-sheet["B10"] = "=SUM(B2:B9)"
-sheet["C5"] = "=(C4-C2)/C2"
-sheet["D20"] = "=AVERAGE(D2:D19)"
-```
+1. 在修改前读取并保存原缓存值。
+2. 不要直接覆盖原文件。
+3. 明确说明外部依赖是否可用。
+4. 只有用户接受链接丢失风险时才使用 `recalc.py --force`。
 
----
+## 财务模型默认约定
 
-## 通用工作流
+既有模板或用户要求优先；否则：
 
-1. 选工具：数据处理用 `pandas`，公式/格式用 `openpyxl`
-2. 新建或加载工作簿
-3. 修改数据、公式、样式
-4. 保存文件
-5. 若含公式，必须执行 `scripts/recalc.py`
-6. 读取 JSON 报告，修复错误后再次回算，直到零错误
+- 蓝字：硬编码输入和情景变量。
+- 黑字：公式。
+- 绿字：同工作簿跨表引用。
+- 红字：外部文件引用。
+- 黄底：关键假设或待填写单元格。
+- 百分比存为小数，`0.15` 显示为 `15.0%`。
+- 负数用括号，零显示为 `-`，倍数显示 `0.0x`。
+- 每个假设放在独立单元格并由公式引用，不把 `1.05` 写死在公式里。
 
-常见错误：
-
-- `#REF!`：引用失效
-- `#DIV/0!`：分母为零
-- `#VALUE!`：类型不匹配
-- `#NAME?`：函数名或命名范围不识别
-
----
-
-## 新建文件（openpyxl）
-
-```python
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
-
-wb = Workbook()
-sheet = wb.active
-
-sheet["A1"] = "Hello"
-sheet["B1"] = "World"
-sheet.append(["Row", "of", "data"])
-
-sheet["B2"] = "=SUM(A1:A10)"
-
-sheet["A1"].font = Font(bold=True, color="FF0000")
-sheet["A1"].fill = PatternFill("solid", start_color="FFFF00")
-sheet["A1"].alignment = Alignment(horizontal="center")
-sheet.column_dimensions["A"].width = 20
-
-wb.save("output.xlsx")
-```
-
-## 编辑现有文件（openpyxl）
-
-```python
-from openpyxl import load_workbook
-
-wb = load_workbook("existing.xlsx")
-sheet = wb.active
-
-for sheet_name in wb.sheetnames:
-    s = wb[sheet_name]
-    print(sheet_name)
-
-sheet["A1"] = "New Value"
-sheet.insert_rows(2)
-sheet.delete_cols(3)
-
-new_sheet = wb.create_sheet("NewSheet")
-new_sheet["A1"] = "Data"
-
-wb.save("modified.xlsx")
-```
-
----
-
-## 公式回算与结果校验
+## 最终验收
 
 ```bash
-python scripts/recalc.py <excel_file> [timeout_seconds]
-python scripts/recalc.py output.xlsx 30
+python scripts/recalc.py output.xlsx
 ```
 
-脚本输出 JSON，核心字段示例：
+随后检查：
 
-```json
-{
-  "status": "success",
-  "total_errors": 0,
-  "total_formulas": 42,
-  "error_summary": {
-    "#REF!": {
-      "count": 2,
-      "locations": ["Sheet1!B5", "Sheet1!C10"]
-    }
-  }
-}
-```
+- `total_errors == 0`
+- 关键公式引用正确
+- sheet 名、列名、日期和数值格式符合用户要求
+- 图表数据范围和图例正确
+- 中文字符、列宽、冻结窗格、筛选和打印区域可用
 
-## 公式检查清单
+## 依赖
 
-- [ ] 先抽查 2-3 个关键引用是否正确
-- [ ] 检查列号映射（例如 BL/BK 易错）
-- [ ] 注意 Excel 行列是 1-based
-- [ ] 处理空值 `NaN`
-- [ ] 远端列（50+ 列）不要漏
-- [ ] 跨表引用格式正确（`Sheet1!A1`）
-- [ ] 避免分母为 0
-- [ ] 先小范围试算，再全量铺公式
-
----
-
-## 最佳实践
-
-### 工具选择
-
-- `pandas`：批量数据处理、分析、导出
-- `openpyxl`：公式、样式、工作簿结构控制
-
-### openpyxl 注意事项
-
-- 单元格索引是 1-based
-- `data_only=True` 可读计算值，但保存后会丢公式（高风险）
-- 大文件可用 `read_only=True` / `write_only=True`
-- 公式不会自动计算，必须跑 `scripts/recalc.py`
-
-### pandas 注意事项
-
-- 显式指定 dtype，避免推断错误
-- 大文件按列读取减少内存
-- 日期列用 `parse_dates` 明确解析
-
-## 代码风格
-
-- 生成 Python 代码应简洁、最小化
-- 不写多余打印和冗长注释
-- 对复杂公式、关键假设、硬编码来源要在工作簿内留注释
+`openpyxl` · `pandas` · `markitdown` · LibreOffice
 

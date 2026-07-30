@@ -1,0 +1,26 @@
+{
+  "upstream": "https://github.com/anthropics/skills.git",
+  "branch": "main",
+  "reviewed_commit": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+  "reviewed_at": "2026-07-30",
+  "policy": "scripts-and-factual-references-upstream-faithful; skill-entrypoints-cn-localized",
+  "skills": {
+    "algorithmic-art": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "brand-guidelines": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "canvas-design": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "claude-api": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "doc-coauthoring": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "docx": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "frontend-design": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "internal-comms": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "mcp-builder": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "pdf": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "pptx": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "skill-creator": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "slack-gif-creator": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "theme-factory": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "web-artifacts-builder": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "webapp-testing": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "xlsx": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb"
+  }
+}

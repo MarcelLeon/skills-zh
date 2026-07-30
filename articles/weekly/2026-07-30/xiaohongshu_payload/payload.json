@@ -1,0 +1,11 @@
+{
+  "title": "Agent Skill 中文化，不该只是翻译",
+  "body": "我把 skills-zh 的维护方式改了：不再以“英文都翻完了”为完成标准。\n\n因为中文用户不会说“调用 docx skill”，而会说：\n“把会议纪要整理成带目录和页码的正式 Word。”\n\n这次做了 4 件事：\n\n1️⃣ 对齐 Anthropic 上游 b29e7cf，Skill 从 16 个增到 17 个\n2️⃣ 新增 claude-api 的中文任务路由\n3️⃣ 同步 DOCX/PPTX/XLSX 的安全与校验升级\n4️⃣ 给每个 Skill 增加中文应触发案例和近似反例\n\n现在一共有 51 条中文触发测试，覆盖口语、中文文件名、隐含产物和误触发边界。\n\n仓库还能一键检查：\npython3 scripts/validate_repository.py\n\n实测：17 个 Skill 结构通过，DOCX/PPTX 最小产物通过新版 validator。XLSX 公式回算在当前 macOS 环境仍超时，所以我没有写成“全链路已通过”。\n\n下一步会每周自动追踪上游变化，先做中文本土化和验证，再生成本周新增核心能力的技术文章。\n\n#AIAgent #Claude #开源项目 #开发者工具",
+  "tags": [
+    "AI Agent",
+    "Claude",
+    "开源项目",
+    "开发者工具"
+  ],
+  "images": []
+}

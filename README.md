@@ -1,315 +1,103 @@
-# Skills 中文版 | Skills Chinese Edition
+# Skills 中文本土化版
 
-[English](#english) | [中文](#中文)
+[English summary](#english-summary)
 
----
+这是 [Anthropic Agent Skills](https://github.com/anthropics/skills) 的中文本土化维护版本。项目不以逐句翻译为目标，而是让 Skill 更容易被中文用户自然触发，并在中文开发、办公和内容场景中给出可执行结果。
 
-<a name="中文"></a>
+当前包含 17 个 Skill，已审计至上游 `b29e7cf`（2026-07-24）。
 
-## 📖 关于本项目
+## 本项目做了什么
 
-这是 Claude Skills 样例库的**中文适配版本**，基于 [Anthropic 官方 Skills 仓库](https://github.com/anthropics/skills)改造而成。
+- **中文触发适配**：覆盖正式表达、口语、中文文件名和隐含任务意图。
+- **中文场景适配**：使用周报、方案评审、中文合同、数据台账、技术汇报等常见场景。
+- **中文 few-shot**：提供真实中文输入、可检查输出和容易误触发的相邻反例。
+- **上游能力同步**：脚本、安全修复、许可证和事实性技术参考尽量忠于官方版本。
+- **持续验收**：校验 Skill frontmatter、插件清单、同步基线和中文触发评测集。
 
-本项目对所有 16 个官方 skills 进行了完整的中文化，包括：
-- ✅ 翻译所有说明文档和指示内容
-- ✅ 场景适配：将示例调整为更符合中文用户使用习惯
-- ✅ 术语统一：建立完整的中英文术语对照表
-- ✅ 保持功能完整性：所有脚本和代码保持可执行性
+详细规则见 [LOCALIZATION.md](LOCALIZATION.md)，同步方法见 [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md)。
+每周技术内容的生成和传播遵循 [ARTICLE_PLAYBOOK.md](ARTICLE_PLAYBOOK.md)。
 
-### 🔄 模型适配说明
+## Skill 目录
 
-本项目中的 skills 默认是为 **Claude 模型**编写的，文档中多处包含"Claude"字样。如果您想将这些 skills 适配到其他大语言模型，可以使用以下命令批量替换：
+| 类别 | Skills |
+| --- | --- |
+| 文档与数据 | `docx`、`pdf`、`pptx`、`xlsx`、`doc-coauthoring` |
+| 开发与 Agent | `claude-api`、`skill-creator`、`mcp-builder`、`webapp-testing`、`web-artifacts-builder` |
+| 设计与创意 | `algorithmic-art`、`canvas-design`、`frontend-design`、`theme-factory` |
+| 品牌与沟通 | `brand-guidelines`、`internal-comms`、`slack-gif-creator` |
 
-#### macOS/Linux 系统：
+每个 Skill 位于 `skills/<skill-name>/`，入口为 `SKILL.md`。相关脚本、模板、字体和参考资料都保存在 Skill 自己的目录内。
+
+## 安装与使用
+
+### Claude Code 插件
+
+```text
+/plugin marketplace add MarcelLeon/skills-zh
+/plugin install document-skills@skills-zh
+/plugin install example-skills@skills-zh
+/plugin install claude-api@skills-zh
+```
+
+安装后直接描述任务即可，例如：
+
+```text
+把合同.docx 里的付款条款用修订模式调整，并给高风险改动加批注。
+```
+
+```text
+我们 Java 服务要接 Claude API，需要流式输出、工具调用和超时处理。
+```
+
+不支持插件的平台也可以单独上传 `skills/<skill-name>/`，或将其中的 `SKILL.md` 作为任务说明使用。
+
+## 创建和验证 Skill
+
+仓库脚本以 Python 3.11 为验证基线；上游 Office 校验工具使用了 Python 3.10+ 语法。
 
 ```bash
-# 替换所有 skills 文件中的 "Claude" 为您的模型名称
-# 注意：此命令会区分大小写，精确匹配 "Claude"
-
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' 's/Claude/[您的大模型名称]/g' {} +
-
-# 示例：替换为 "GPT"
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' 's/Claude/GPT/g' {} +
-
-# 示例：替换为 "Qwen"
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' 's/Claude/Qwen/g' {} +
+python3.11 -m pip install -r requirements-dev.txt
 ```
 
-#### Windows 系统（Git Bash 或 WSL）：
+从模板开始：
 
 ```bash
-# Windows 下使用 sed（无需 '' 参数）
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i 's/Claude/[您的大模型名称]/g' {} +
+cp -R template my-skill
 ```
 
-#### 大小写变体处理：
-
-如果需要同时替换不同大小写形式（如 Claude, claude, CLAUDE），使用以下命令：
+将目录和 frontmatter `name` 改为 kebab-case，再运行：
 
 ```bash
-# macOS/Linux - 替换所有大小写变体
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' -E 's/Claude|claude|CLAUDE/[您的大模型名称]/g' {} +
-
-# Windows (Git Bash/WSL)
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i -E 's/Claude|claude|CLAUDE/[您的大模型名称]/g' {} +
+python3 skills/skill-creator/scripts/quick_validate.py skills/<skill-name>
+python3 skills/skill-creator/scripts/package_skill.py skills/<skill-name> /tmp/skill-dist
 ```
 
-**⚠️ 重要提示：**
-1. 替换前建议先备份或使用 Git 版本控制
-2. 替换后需要测试验证功能是否正常
-3. 某些技术术语（如"Claude API"）可能需要手动调整
-4. 建议先在单个文件上测试命令，确认效果后再批量执行
-
-### 📂 项目结构
-
-```
-skills-zh/
-├── README.md                    # 本文件（中英文双语）
-├── skills/                      # 所有 skills（已中文化）
-│   ├── skill-creator/          # Skill 创建工具
-│   ├── docx/                   # Word 文档生成
-│   ├── pdf/                    # PDF 文档生成
-│   ├── pptx/                   # PowerPoint 演示文稿生成
-│   ├── xlsx/                   # Excel 表格生成
-│   ├── mcp-builder/            # MCP 服务器构建
-│   ├── webapp-testing/         # Web 应用测试
-│   ├── web-artifacts-builder/  # Web 工件构建
-│   ├── internal-comms/         # 内部沟通
-│   ├── brand-guidelines/       # 品牌指南
-│   ├── canvas-design/          # 画布设计
-│   ├── theme-factory/          # 主题工厂
-│   ├── slack-gif-creator/      # Slack GIF 创建
-│   ├── algorithmic-art/        # 算法艺术
-│   ├── doc-coauthoring/        # 文档共同撰写
-│   └── frontend-design/        # 前端设计
-├── spec/                       # Agent Skills 规范
-└── template/                   # Skill 模板
-```
-
-### 🎯 Skill 分类
-
-#### 📄 文档类工具
-- **docx** - 创建格式化的 Word 文档
-- **pdf** - 生成专业的 PDF 文档
-- **pptx** - 制作精美的 PowerPoint 演示文稿
-- **xlsx** - 创建数据丰富的 Excel 表格
-- **doc-coauthoring** - 结构化文档共同撰写工作流
-
-#### 🛠️ 开发工具类
-- **skill-creator** - 创建和验证新 skills 的工具
-- **mcp-builder** - 构建 MCP（Model Context Protocol）服务器
-- **webapp-testing** - Web 应用自动化测试
-- **web-artifacts-builder** - Web 工件构建工具
-
-#### 🎨 创意与设计类
-- **algorithmic-art** - 使用 p5.js 创建算法艺术
-- **canvas-design** - 画布设计工具
-- **frontend-design** - 创建高质量前端界面
-- **theme-factory** - 主题生成工厂
-
-#### 💼 企业与沟通类
-- **internal-comms** - 内部沟通消息生成
-- **brand-guidelines** - 品牌指南应用
-- **slack-gif-creator** - 为 Slack 创建动画 GIF
-
-### 🚀 使用方法
-
-#### 方法 1：在支持 Skills 的平台中使用
-
-如果您使用的 AI 平台支持 Skills 功能，可以直接将 `skills/` 目录下的任何 skill 文件夹上传使用。
-
-#### 方法 2：作为提示词参考
-
-即使平台不支持 Skills，您也可以将 `SKILL.md` 文件中的内容作为高质量提示词模板参考。
-
-#### 方法 3：使用 skill-creator 创建自定义 Skill
+仓库级验证：
 
 ```bash
-cd skills/skill-creator
-python3 scripts/init_skill.py
-# 按提示输入 skill 名称和描述
+python3 scripts/validate_repository.py
 ```
 
-### 📚 相关资源
+## 贡献要求
 
-- **原项目仓库**: [anthropics/skills](https://github.com/anthropics/skills)
-- **Agent Skills 规范**: [agentskills.io](http://agentskills.io)
-- **术语对照表**: 请参考各 skill 中的注释说明
+新增或同步 Skill 时，请同时完成：
 
-### ⚖️ 许可证
+1. 说明对应的上游 commit 和能力变化。
+2. 重写中文触发描述，不直接机器翻译。
+3. 加入真实中文 few-shot 和近似反例。
+4. 更新 `localization/trigger-evals.json` 与 `sync/upstream-baseline.json`。
+5. 运行仓库级验证；视觉产物还要做人眼检查。
 
-- 大部分 skills: Apache 2.0 开源许可证
-- 文档类 skills (docx/pdf/pptx/xlsx): 源码可见但非开源，仅供参考
-- 中文化改造内容: 遵循原项目许可证
+贡献细节见 [AGENTS.md](AGENTS.md)。
 
-### 🤝 贡献
+## 许可证
 
-欢迎提交 Issue 和 Pull Request 来改进中文化质量或添加新的中文 skills。
+- 大部分示例 Skill 使用 Apache 2.0。
+- `docx`、`pdf`、`pptx`、`xlsx` 为源码可见但非开源，具体以各目录 `LICENSE.txt` 为准。
+- 中文本土化内容遵循对应上游文件的许可证；第三方说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
----
+## English summary
 
-<a name="english"></a>
+skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 17 skills and is reviewed against upstream commit `b29e7cf`.
 
-## 📖 About This Project
-
-This is a **Chinese-adapted version** of the Claude Skills repository, based on the [official Anthropic Skills repository](https://github.com/anthropics/skills).
-
-This project provides complete Chinese localization for all 16 official skills, including:
-- ✅ Translation of all documentation and instructions
-- ✅ Scenario adaptation: Examples adjusted for Chinese user habits
-- ✅ Terminology standardization: Complete Chinese-English terminology mapping
-- ✅ Maintained functionality: All scripts and code remain executable
-
-### 🔄 Model Adaptation Guide
-
-The skills in this project are written for **Claude** by default, with "Claude" mentioned throughout the documentation. If you want to adapt these skills for other large language models, use the following commands for batch replacement:
-
-#### macOS/Linux:
-
-```bash
-# Replace "Claude" with your model name in all skills files
-# Note: This command is case-sensitive and matches "Claude" exactly
-
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' 's/Claude/[YourModelName]/g' {} +
-
-# Example: Replace with "GPT"
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' 's/Claude/GPT/g' {} +
-
-# Example: Replace with "Qwen"
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' 's/Claude/Qwen/g' {} +
-```
-
-#### Windows (Git Bash or WSL):
-
-```bash
-# Windows sed (no '' parameter needed)
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i 's/Claude/[YourModelName]/g' {} +
-```
-
-#### Case Variant Handling:
-
-To replace different case variants simultaneously (Claude, claude, CLAUDE):
-
-```bash
-# macOS/Linux - Replace all case variants
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i '' -E 's/Claude|claude|CLAUDE/[YourModelName]/g' {} +
-
-# Windows (Git Bash/WSL)
-find ./skills -type f \( -name "*.md" -o -name "*.py" -o -name "*.js" -o -name "*.html" \) \
-  -exec sed -i -E 's/Claude|claude|CLAUDE/[YourModelName]/g' {} +
-```
-
-**⚠️ Important Notes:**
-1. Backup or use Git version control before replacement
-2. Test functionality after replacement
-3. Some technical terms (e.g., "Claude API") may need manual adjustment
-4. Test the command on a single file first before batch execution
-
-### 📂 Project Structure
-
-```
-skills-zh/
-├── README.md                    # This file (bilingual)
-├── skills/                      # All skills (Chinese localized)
-│   ├── skill-creator/          # Skill creation tool
-│   ├── docx/                   # Word document generation
-│   ├── pdf/                    # PDF document generation
-│   ├── pptx/                   # PowerPoint presentation generation
-│   ├── xlsx/                   # Excel spreadsheet generation
-│   ├── mcp-builder/            # MCP server builder
-│   ├── webapp-testing/         # Web application testing
-│   ├── web-artifacts-builder/  # Web artifact builder
-│   ├── internal-comms/         # Internal communications
-│   ├── brand-guidelines/       # Brand guidelines
-│   ├── canvas-design/          # Canvas design
-│   ├── theme-factory/          # Theme factory
-│   ├── slack-gif-creator/      # Slack GIF creator
-│   ├── algorithmic-art/        # Algorithmic art
-│   ├── doc-coauthoring/        # Document co-authoring
-│   └── frontend-design/        # Frontend design
-├── spec/                       # Agent Skills specification
-└── template/                   # Skill template
-```
-
-### 🎯 Skill Categories
-
-#### 📄 Document Tools
-- **docx** - Create formatted Word documents
-- **pdf** - Generate professional PDF documents
-- **pptx** - Create beautiful PowerPoint presentations
-- **xlsx** - Create data-rich Excel spreadsheets
-- **doc-coauthoring** - Structured document co-authoring workflow
-
-#### 🛠️ Development Tools
-- **skill-creator** - Tool for creating and validating new skills
-- **mcp-builder** - Build MCP (Model Context Protocol) servers
-- **webapp-testing** - Web application automated testing
-- **web-artifacts-builder** - Web artifact builder
-
-#### 🎨 Creative & Design
-- **algorithmic-art** - Create algorithmic art using p5.js
-- **canvas-design** - Canvas design tool
-- **frontend-design** - Create high-quality frontend interfaces
-- **theme-factory** - Theme generation factory
-
-#### 💼 Enterprise & Communication
-- **internal-comms** - Internal communication message generation
-- **brand-guidelines** - Brand guidelines application
-- **slack-gif-creator** - Create animated GIFs for Slack
-
-### 🚀 Usage
-
-#### Method 1: Use in Skills-Enabled Platforms
-
-If your AI platform supports Skills, you can upload any skill folder from `skills/` directory directly.
-
-#### Method 2: As Prompt Reference
-
-Even if your platform doesn't support Skills, you can use the content in `SKILL.md` files as high-quality prompt templates.
-
-#### Method 3: Create Custom Skills with skill-creator
-
-```bash
-cd skills/skill-creator
-python3 scripts/init_skill.py
-# Follow prompts to enter skill name and description
-```
-
-### 📚 Resources
-
-- **Original Repository**: [anthropics/skills](https://github.com/anthropics/skills)
-- **Agent Skills Specification**: [agentskills.io](http://agentskills.io)
-- **Terminology Reference**: See comments in individual skills
-
-### ⚖️ License
-
-- Most skills: Apache 2.0 open source license
-- Document skills (docx/pdf/pptx/xlsx): Source-available but not open source, for reference only
-- Chinese localization: Follows original project license
-
-### 🤝 Contributing
-
-Issues and Pull Requests are welcome to improve Chinese localization quality or add new Chinese skills.
-
----
-
-## 🌟 Star History
-
-If you find this project helpful, please consider giving it a star! ⭐
-
----
-
-**项目状态 | Project Status**: ✅ 已完成中文化 | Chinese Localization Complete
-
-**最后更新 | Last Update**: 2026-01-22
+See [LOCALIZATION.md](LOCALIZATION.md) for the localization contract and [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md) for the weekly synchronization workflow.

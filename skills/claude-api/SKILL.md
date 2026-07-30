@@ -1,0 +1,139 @@
+---
+name: claude-api
+description: "构建、迁移或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、Managed Agents、Bedrock/Vertex/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
+license: Complete terms in LICENSE.txt
+---
+
+# 面向中文开发者的 Claude API 实践
+
+本 Skill 保存 Anthropic 官方最新 API/SDK 参考，并提供中文任务路由。技术事实以各语言 reference、`shared/` 和官方实时文档为准；不要从其他语言 SDK 猜方法名，也不要把 OpenAI-compatible shim 当作 Anthropic 官方 SDK。
+
+## 先确认供应商
+
+在修改代码前，检查用户说明和目标文件：
+
+- 出现 `anthropic`、`@anthropic-ai/sdk`、`com.anthropic`、`claude-*`：继续使用本 Skill。
+- 明确出现 OpenAI、Gemini、Llama、Mistral、Cohere、Ollama：停止套用 Claude 写法。
+- 用户没有指定供应商：先扫描项目中的 provider 依赖；若已有其他 provider，不要悄悄混入 Anthropic SDK。
+- 用户明确要求“迁移到 Claude”时，先确认改动文件和目标模型，再开始。
+
+## 中文任务 few-shot
+
+**输入：**“我们 Java 服务要接 Claude，要求流式输出、工具调用和超时处理。”
+
+**路由：**读取 `java/claude-api/README.md`、`java/claude-api/streaming.md`、`java/claude-api/tool-use.md`；使用官方 Java SDK，先实现最小流式请求，再增加工具和错误处理，最后通过编译和受控 API smoke test。
+
+**输入：**“Anthropic prompt caching 为什么一直没命中？”
+
+**路由：**读取 `shared/prompt-caching.md`；比较 tools → system → messages 的稳定前缀，检查时间戳、无序 JSON 和变化的工具集，并用 usage 中的缓存字段证明修复。
+
+**输入：**“我们想每天自动跑一个带文件工作区和记忆的 Agent。”
+
+**路由：**先区分自建 Tool Runner、Claude Agent SDK 与 Managed Agents；若需要 Anthropic 托管循环、工作区和调度，读取 `shared/managed-agents-overview.md` 与 `shared/managed-agents-scheduled-deployments.md`。
+
+**不应触发：**“这个项目明确使用 OpenAI Responses API，帮我补 GPT 工具调用。”此时继续使用对应 provider，不引入 Anthropic 依赖。
+
+## 输出必须使用官方接口
+
+实现 Claude 功能时，只选一种：
+
+1. 项目语言对应的 Anthropic 官方 SDK，这是默认选择。
+2. 用户明确要求 cURL/REST、项目本身是 shell，或语言没有官方 SDK时，使用原始 HTTP。
+
+不要在同一实现中混用官方 SDK 和手写 HTTP，也不要因为代码更短而在 Python/TypeScript 中绕过 SDK。
+
+SDK 方法、参数、类名和 import 必须来自本 Skill 对应语言文档或 `shared/live-sources.md` 指向的官方来源。网络不可用时，使用本地 reference 写最小实现，再通过编译器/解释器错误迭代，不反复猜测。
+
+## 语言路由
+
+| 项目线索 | 读取目录 |
+| --- | --- |
+| `.py`、`pyproject.toml`、`requirements.txt` | `python/` |
+| `.ts/.tsx/.js/.jsx`、`package.json` | `typescript/` |
+| `.java/.kt/.scala`、Maven/Gradle | `java/` |
+| `.go`、`go.mod` | `go/` |
+| `.rb`、`Gemfile` | `ruby/` |
+| `.cs/.csproj` | `csharp/` |
+| `.php`、`composer.json` | `php/` |
+| shell、原始 REST、无官方 SDK 的语言 | `curl/` |
+
+检测到多种语言时，优先用户正在修改的文件；仍不明确再询问。Rust、Swift、C++ 等没有对应官方示例时，从 `curl/` 给出协议级实现，并明确边界。
+
+## 先选最简单的运行面
+
+| 需求 | 推荐面 |
+| --- | --- |
+| 分类、总结、抽取、问答 | 单次 Claude API 调用 |
+| 批量离线任务 | Message Batches |
+| 代码控制的固定多步流程 | Claude API + tool use |
+| 自建工具 Agent，不想手写循环 | 官方 SDK Tool Runner |
+| 需要托管工作区、状态、版本和调度 | Managed Agents |
+| 需要 Claude Code 内置文件/Bash/搜索能力且自己部署 | Claude Agent SDK（单独产品） |
+
+Tool Runner、Managed Agents、Claude Agent SDK 不是同一产品：
+
+- Tool Runner 只帮你循环调用自定义工具，运行环境仍由你托管。
+- Managed Agents 同时托管 agent loop 和每个 session 的执行空间。
+- Claude Agent SDK 是 Claude Code harness 的 SDK，带文件、Bash、搜索、MCP 和子 Agent；本 Skill 不用 Tool Runner 冒充它。
+
+只有任务开放、价值足够、模型可胜任且错误可被测试/审核兜底时才升级为 Agent。
+
+## 高频 reference 路由
+
+- 当前模型、上下文窗口和能力：`shared/models.md`。涉及当前价格或能力时优先调用 Models API 或读取官方实时来源。
+- 模型迁移：`shared/model-migration.md`。
+- 平台差异：`shared/platform-availability.md`。
+- Prompt caching：`shared/prompt-caching.md`。
+- token 计算：`shared/token-counting.md`。
+- 工具调用概念：`shared/tool-use-concepts.md`。
+- Agent 架构判断：`shared/agent-design.md`。
+- 鉴权与 `ant` CLI：`shared/anthropic-cli.md`。
+- 错误码：`shared/error-codes.md`。
+- 官方实时来源：`shared/live-sources.md`。
+- Managed Agents 总览：`shared/managed-agents-overview.md`，其余能力按 `shared/managed-agents-*.md` 读取。
+
+各语言目录下：
+
+- `claude-api/README.md`：安装、基础调用、结构化输出、常用能力。
+- `streaming.md`：流式事件和最终消息。
+- `tool-use.md`：工具定义、循环和 Tool Runner。
+- `files-api.md`：文件上传和引用。
+- `batches.md`：批处理（支持该文件的语言）。
+- `managed-agents/README.md`：对应语言的 Managed Agents 示例。
+
+## API 漂移纪律
+
+Claude API、模型 ID、beta header、thinking、effort、server tools 和平台可用性变化很快：
+
+- 不凭训练记忆构造模型 ID或日期后缀。
+- 用户问“现在支持什么”时，查询 Models API 或 `shared/live-sources.md`。
+- 迁移任务先读 `shared/model-migration.md` 的范围确认和 breaking changes。
+- 旧的 `budget_tokens`、server tool type、structured output 参数等写法必须按当前 reference 核对。
+- Bedrock、Vertex、Microsoft Foundry 和 Claude Platform on AWS 的能力不能互相推断，读取 `shared/platform-availability.md`。
+
+## 鉴权
+
+`ANTHROPIC_API_KEY` 未设置不等于没有凭据。若环境有 `ant` CLI，先运行：
+
+```bash
+ant auth status
+```
+
+已有 active profile 时，官方 SDK 的零参数 client 可直接读取。只有确认没有任何凭据来源时，才建议用户 `ant auth login` 或配置环境变量。不要把 key、OAuth token、cookie 或 profile 内容写入仓库。
+
+## 实现和验收
+
+1. 读取目标语言 reference，先完成最小调用。
+2. 根据任务加入 streaming、tools、caching 或 structured output，不一次堆满所有能力。
+3. 处理 HTTP 错误、超时、重试、`stop_reason` 和流中断。
+4. 静态语言先编译；动态语言至少做 import/语法检查。
+5. 有凭据时执行最小、低成本 smoke test；没有凭据时明确验证边界，不伪称实测通过。
+6. 输出说明所用模型、SDK、beta 能力和平台，避免读者误用到其他云。
+
+## 中文开发体验
+
+- 中文示例使用真实业务输入，不用“Hello world”充当最终演示。
+- 结构化抽取要覆盖中文标点、空值、日期和中英文混排。
+- 工具名称保持稳定英文标识，`description` 可以用清晰中文解释意图和参数。
+- Prompt 不机械堆叠“必须”；说明业务目标、输入边界、失败处理和验收方式。
+- 面向国内团队的文档同时给出 Maven/npm/pip 等可复现命令，但不假设读者能访问非官方镜像。

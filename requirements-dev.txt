@@ -1,0 +1,5 @@
+PyYAML>=6.0,<7
+defusedxml>=0.7,<1
+lxml>=5,<7
+openpyxl>=3.1,<4
+Pillow>=10,<13
