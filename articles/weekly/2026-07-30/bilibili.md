@@ -1,5 +1,5 @@
 ---
-title: 我把 Agent Skills 中文化从翻译任务改成了工程验收
+title: Agent Skills 中文化：从翻译到工程验收
 tags: [AI, Agent, Claude, 开源]
 links: [https://github.com/MarcelLeon/skills-zh]
 images: []

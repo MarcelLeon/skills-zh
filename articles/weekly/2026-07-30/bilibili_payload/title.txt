@@ -1,1 +1,1 @@
-我把 Agent Skills 中文化从翻译任务改成了工程验收
+Agent Skills 中文化：从翻译到工程验收

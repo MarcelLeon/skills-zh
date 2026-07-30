@@ -1,0 +1,3 @@
+Chinese localization is not a translation task. I rebuilt skills-zh around colloquial triggers, realistic few-shots, near-miss cases, and a weekly upstream sync loop.
+
+#AIAgents #DeveloperTools #OpenSource

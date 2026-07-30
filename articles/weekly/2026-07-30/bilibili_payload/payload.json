@@ -1,6 +1,6 @@
 {
   "channel": "bilibili",
-  "title": "我把 Agent Skills 中文化从翻译任务改成了工程验收",
+  "title": "Agent Skills 中文化：从翻译到工程验收",
   "body": "一、为什么只翻译不够\n中文用户不会总是说“调用 docx skill”。\n他们更可能说：把这份会议纪要整理成带目录和页码的正式 Word。\n如果 Skill 只翻译文件类型，真实口语、隐含交付物和误触发边界仍然缺失。\n二、这次新增了什么\nskills-zh 本次审计到 Anthropic 上游 b29e7cf，从 16 个 Skill 扩展到 17 个。\n新增 claude-api，中文入口会识别 Java、Python、TypeScript 等项目语言，并把流式输出、工具调用、缓存、Managed Agents 等任务路由到官方参考。\nDOCX、PPTX、XLSX 同步了 7 月新版脚本，包括模板格式支持、压缩包输入安全和 Office 校验增强。\n三、中文本土化如何验收\n17 个 Skill 每个至少有两个应触发案例和一个近似反例，一共 51 条中文提示。\n仓库 validator 同时检查 frontmatter、中文入口、插件清单和上游基线。\n运行命令：\npython3 scripts/validate_repository.py\n四、实际验证结果\n17 个 Skill 的结构验证全部通过。\nPython 3.11 和 Shell 语法检查通过。\n最小 DOCX 和 PPTX 产物通过新版 validator。\nXLSX 的 LibreOffice 公式回算在当前 macOS 环境仍超时，所以暂时不能宣称全链路通过。\n五、后续\n项目会每周拉取 Anthropic 上游变化，先分析能力和风险，再重写中文触发、场景、few-shot 和反例，并生成本周核心变化的技术文章。\n项目地址：\nhttps://github.com/MarcelLeon/skills-zh",
   "tags": [
     "AI",
