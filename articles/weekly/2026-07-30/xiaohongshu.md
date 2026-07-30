@@ -2,7 +2,8 @@
 title: Agent Skill 中文化，不该只是翻译
 tags: [AI Agent, Claude, 开源项目, 开发者工具]
 links: [https://github.com/MarcelLeon/skills-zh]
-images: []
+images:
+  - /Users/wangzq/VsCodeProjects/skills-zh/articles/weekly/2026-07-30/assets/xiaohongshu-cover.png
 ---
 
 我把 skills-zh 的维护方式改了：不再以“英文都翻完了”为完成标准。
