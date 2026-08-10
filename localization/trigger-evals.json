@@ -25,9 +25,17 @@
     "claude-api": {
       "should_trigger": [
         "我们 Java 服务要接 Claude API，要求流式输出、工具调用和超时处理，给可运行实现。",
-        "Anthropic 的 prompt caching 为什么一直没命中？帮我检查这段 TypeScript 调用。"
+        "Anthropic 的 prompt caching 为什么一直没命中？帮我检查这段 TypeScript 调用。",
+        "Managed Agents 跑代码审查时每个 session 最多花 25 美元，达到 budget_reached 后先停住，审批后再调高额度继续。",
+        "我们的 coordinator 和 worker 都要固定在 US inference，再配一个 Opus Advisor，帮我检查 roster 和事件处理。",
+        "这个 GitHub 仓库根目录已经有 .claude/skills，挂到 Anthropic cloud session 后想自动加载，同时审计一下指令注入风险。",
+        "一个研究任务要并行看 20 份供应商材料，主 Agent 负责核验和汇总，阅读交给便宜 worker，给我 Managed Agents 实现。"
       ],
-      "should_not_trigger": ["这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。"]
+      "should_not_trigger": [
+        "这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。",
+        "给 GitHub Actions 的每周构建配置云账单预算告警，不涉及 Claude 或任何 LLM。",
+        "我们用 LangGraph 和 Gemini 自建多 Agent，帮我加一个 reviewer 节点，不要引入 Anthropic。"
+      ]
     },
     "doc-coauthoring": {
       "should_trigger": [

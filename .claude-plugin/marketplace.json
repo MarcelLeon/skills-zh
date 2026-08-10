@@ -43,7 +43,7 @@
     },
     {
       "name": "claude-api",
-      "description": "面向中文开发者的 Claude API、SDK、Agent 与模型迁移参考",
+      "description": "面向中文开发者的 Claude API、SDK、Managed Agents、多 Agent 编排与模型迁移参考",
       "source": "./",
       "strict": false,
       "skills": [

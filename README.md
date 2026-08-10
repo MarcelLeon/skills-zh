@@ -4,7 +4,7 @@
 
 这是 [Anthropic Agent Skills](https://github.com/anthropics/skills) 的中文本土化维护版本。项目不以逐句翻译为目标，而是让 Skill 更容易被中文用户自然触发，并在中文开发、办公和内容场景中给出可执行结果。
 
-当前包含 17 个 Skill，已审计至上游 `b29e7cf`（2026-07-24）。
+当前包含 17 个 Skill，已审计至上游 `f17010c`（2026-08-07）。
 
 ## 本项目做了什么
 
@@ -13,6 +13,8 @@
 - **中文 few-shot**：提供真实中文输入、可检查输出和容易误触发的相邻反例。
 - **上游能力同步**：脚本、安全修复、许可证和事实性技术参考尽量忠于官方版本。
 - **持续验收**：校验 Skill frontmatter、插件清单、同步基线和中文触发评测集。
+
+本周同步为 `claude-api` 补齐 Managed Agents 的 session/deployment 预算、`inference_geo`、仓库 Skills、Advisor 与多 Agent 分工参考，同时修正 agent version、Files API `purpose`、`vault_ids` 更新边界等事实。中文入口新增预算恢复、数据驻留和仓库指令信任边界的真实任务路由。
 
 详细规则见 [LOCALIZATION.md](LOCALIZATION.md)，同步方法见 [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md)。
 每周技术内容的生成和传播遵循 [ARTICLE_PLAYBOOK.md](ARTICLE_PLAYBOOK.md)。
@@ -69,7 +71,7 @@ cp -R template my-skill
 
 ```bash
 python3 skills/skill-creator/scripts/quick_validate.py skills/<skill-name>
-python3 skills/skill-creator/scripts/package_skill.py skills/<skill-name> /tmp/skill-dist
+PYTHONPATH=skills/skill-creator python3 -m scripts.package_skill skills/<skill-name> /tmp/skill-dist
 ```
 
 仓库级验证：
@@ -98,6 +100,6 @@ python3 scripts/validate_repository.py
 
 ## English summary
 
-skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 17 skills and is reviewed against upstream commit `b29e7cf`.
+skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 17 skills and is reviewed against upstream commit `f17010c`.
 
 See [LOCALIZATION.md](LOCALIZATION.md) for the localization contract and [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md) for the weekly synchronization workflow.
