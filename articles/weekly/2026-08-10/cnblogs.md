@@ -1,5 +1,5 @@
 ---
-title: Managed Agents 进生产前，先把预算、数据驻留和多 Agent 边界说清楚
+title: skills-zh 2026.08.10 发布说明：Managed Agents 生产治理能力更新
 tags: [Claude API, Managed Agents, Agent Skills, 多 Agent]
 categories: [AI]
 links:
@@ -7,7 +7,9 @@ links:
 images: []
 ---
 
-# Managed Agents 进生产前，先把预算、数据驻留和多 Agent 边界说清楚
+# skills-zh 2026.08.10 发布说明：Managed Agents 生产治理能力更新
+
+> 发布日期：2026-08-10｜上游版本：`f17010c`｜影响范围：`claude-api` 18 个文件｜状态：Draft PR #1，CI Passed
 
 Agent 能跑起来，不等于能放心交给生产环境。
 

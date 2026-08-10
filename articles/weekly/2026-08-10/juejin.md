@@ -1,5 +1,5 @@
 ---
-title: Managed Agents 上生产前：预算、数据驻留与多 Agent 的 4 个边界
+title: skills-zh 发布说明：Managed Agents 生产治理能力更新
 category: 人工智能
 tags: [Claude, Agent, 多Agent, 开发工具]
 summary: 用上游 diff 和仓库门禁梳理 Managed Agents 的硬预算、推理区域、仓库 Skills 与 Advisor 边界。
@@ -7,7 +7,9 @@ links: [https://github.com/MarcelLeon/skills-zh]
 images: []
 ---
 
-# Managed Agents 上生产前：预算、数据驻留与多 Agent 的 4 个边界
+# skills-zh 发布说明：Managed Agents 生产治理能力更新
+
+> 2026.08.10｜上游 `f17010c`｜`claude-api` 18 个文件｜Draft PR #1 CI Passed
 
 Agent demo 常关注模型和工具，生产实现更容易栽在状态、成本与信任边界上。
 

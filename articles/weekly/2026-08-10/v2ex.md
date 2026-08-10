@@ -1,5 +1,5 @@
 ---
-title: 大家会把 Agent 的美元预算、geo 和仓库 Skills 放在哪一层验收？
+title: skills-zh 本周发布：大家会把 Agent 治理放在哪一层验收？
 node: programmer
 links: [https://github.com/MarcelLeon/skills-zh]
 images: []
