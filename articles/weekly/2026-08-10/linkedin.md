@@ -1,9 +1,11 @@
 ---
-title: Production boundaries for Managed Agents belong in the skill contract
+title: skills-zh 2026.08.10 release: production governance for Managed Agents
 tags: [AI, Agents, Claude, DeveloperTools]
 links: [https://github.com/MarcelLeon/skills-zh]
 images: []
 ---
+
+skills-zh 2026.08.10 product release note — upstream f17010c, claude-api, 18 changed files, Draft PR #1 with CI passed.
 
 An agent that runs is not yet an agent that is ready for production.
 

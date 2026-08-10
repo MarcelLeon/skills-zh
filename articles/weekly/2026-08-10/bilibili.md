@@ -1,9 +1,12 @@
 ---
-title: Managed Agents 进生产前：预算、驻留与多 Agent 边界
+title: skills-zh 2026.08.10 发布说明：Managed Agents 生产治理更新
 tags: [Claude, Agent, 多Agent, 开发工具]
 links: [https://github.com/MarcelLeon/skills-zh]
 images: []
 ---
+skills-zh 2026.08.10 产品发布说明
+上游版本：f17010c
+交付状态：Draft PR #1，CI Passed
 一、Agent 能跑不等于能进生产
 本周 skills-zh 对齐 Anthropic 上游 f17010c。claude-api 共 18 个文件变化，重点不是新模型，而是 Managed Agents 的预算、推理区域、仓库 Skills、Advisor 和多 Agent 分工。
 二、美元硬预算不是 token 提醒
