@@ -1,6 +1,6 @@
 ---
 name: claude-api
-description: "构建、迁移或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、Managed Agents、Bedrock/Vertex/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
+description: "构建、迁移或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、Managed Agents/CMA、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills、Bedrock/Vertex/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
 license: Complete terms in LICENSE.txt
 ---
 
@@ -30,6 +30,18 @@ license: Complete terms in LICENSE.txt
 **输入：**“我们想每天自动跑一个带文件工作区和记忆的 Agent。”
 
 **路由：**先区分自建 Tool Runner、Claude Agent SDK 与 Managed Agents；若需要 Anthropic 托管循环、工作区和调度，读取 `shared/managed-agents-overview.md` 与 `shared/managed-agents-scheduled-deployments.md`。
+
+**输入：**“代码审查 Agent 每次最多花 25 美元，碰到上限先暂停；我确认后调高额度继续，别把它做成 token 提醒。”
+
+**路由：**读取 `shared/managed-agents-core.md` 的 Session budgets 和 `shared/managed-agents-events.md` 的 `budget_reached` 事件顺序；使用 Managed Agents 的美元硬上限，不误用 Messages API 的 token 型 `task_budget`，并验证只有修改或移除 session budget 才能恢复。
+
+**输入：**“我们有数据驻留要求：主 Agent 和几个 worker 都必须在 US inference，另外想让 Opus Advisor 在复杂决策时给建议。”
+
+**路由：**读取 `shared/managed-agents-core.md` 的 `inference_geo`、`shared/managed-agents-multiagent.md` 的 roster uniformity 与 Advisor；确保地理位置写在 Managed Agents 的 `model` 对象中、整个 roster 一致，并按 advisor 模型规则区分明文与 redacted 结果。
+
+**输入：**“仓库根目录已经有 `.claude/skills`，挂到云端 session 后能不能直接用？顺便帮我看安全边界。”
+
+**路由：**读取 `shared/managed-agents-environments.md` 与 `shared/managed-agents-tools.md`；确认只在 cloud sandbox、session 启动时扫描仓库根目录的一层 Skill，并把可提交 `.claude/skills` 的人员视为 Agent 指令信任边界。
 
 **不应触发：**“这个项目明确使用 OpenAI Responses API，帮我补 GPT 工具调用。”此时继续使用对应 provider，不引入 Anthropic 依赖。
 
@@ -77,6 +89,14 @@ Tool Runner、Managed Agents、Claude Agent SDK 不是同一产品：
 - Claude Agent SDK 是 Claude Code harness 的 SDK，带文件、Bash、搜索、MCP 和子 Agent；本 Skill 不用 Tool Runner 冒充它。
 
 只有任务开放、价值足够、模型可胜任且错误可被测试/审核兜底时才升级为 Agent。
+
+## Managed Agents 新能力分流
+
+- **预算**：session budget 是按公开价计算的美元硬上限，只能创建 session 时加入；达到 `budget_reached` 后只有修改或移除预算能恢复，移除后不能重新加入。deployment budget 可在部署更新时清除和重新加入，并复制到后续每次触发的 session。
+- **数据驻留**：Managed Agents 的 `inference_geo` 写在 `model` 对象内，不是 Messages API 的顶层参数；multiagent roster 必须全部使用同一 geo 或全部不设置。
+- **仓库 Skills**：挂载 GitHub 仓库时，cloud sandbox 会在 session 启动时发现根目录 `.claude/skills/<skill-name>/`。它只扫描一次，且这些文件属于可执行 Agent 指令的信任边界。
+- **多 Agent**：任务可并行拆分或阅读量会挤满主上下文时，读取 `shared/managed-agents-multiagent.md`。先用 `self` 验证分工，再把阅读型任务交给便宜 worker，最后才增加专门角色。
+- **Advisor**：Managed Agents 使用 roster 中的 `{type: "advisor", model}`，结果通过 thread events 交付；Messages API 则使用 Advisor tool，两者的配置项和结果结构不能混用。
 
 ## 高频 reference 路由
 
