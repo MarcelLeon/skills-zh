@@ -1,6 +1,6 @@
 ---
 name: claude-api
-description: "构建、迁移或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、Managed Agents/CMA、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills、Bedrock/Vertex/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
+description: "构建、迁移、审计或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、Managed Agents/CMA、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills，以及审查旧模型留下的 Prompt/系统提示词/Skill/tool description、清理 prompt cruft、判断提示词是否过时、迁移模型时同步检查提示词行为。也覆盖 Bedrock/Vertex/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
 license: Complete terms in LICENSE.txt
 ---
 
@@ -43,7 +43,26 @@ license: Complete terms in LICENSE.txt
 
 **路由：**读取 `shared/managed-agents-environments.md` 与 `shared/managed-agents-tools.md`；确认只在 cloud sandbox、session 启动时扫描仓库根目录的一层 Skill，并把可提交 `.claude/skills` 的人员视为 Agent 指令信任边界。
 
+**输入：**“这套客服 Agent 的 system prompt 从 Claude 3.5 时代一直加补丁，现在又长又爱过度规划。盘点仓库里的提示词、Skill 和工具描述，找出真的过时项，先给审计报告和建议 diff，不要直接改。”
+
+**路由：**读取 `shared/prompt-audit.md`；从请求和仓库推断范围与目标模型，清点完整 Prompt surface 并结合 Git provenance 扫描明确的 dated patterns。报告必须给出 `file:line`、模式、过时原因与置信度，同时提供 proposed diff；保留业务上下文、工具契约和仍能复现的约束，不把“更短”当成结论。
+
+**输入：**“把仓库从 Sonnet 4.6 迁到 Opus 5。模型 ID 和参数已经改了一半，顺便把旧模型时代的 prefill、think step by step 和 tool descriptions 一起收尾。”
+
+**路由：**先读 `shared/model-migration.md` 完成目标模型的 breaking changes，再读 `shared/prompt-audit.md` 审计范围内的 Prompt、工具描述与 request builder。API 已替代的脚手架要连同调用方和旧测试一起提出修改，并用迁移后的行为 probe 验证。
+
 **不应触发：**“这个项目明确使用 OpenAI Responses API，帮我补 GPT 工具调用。”此时继续使用对应 provider，不引入 Anthropic 依赖。
+
+**不应触发：**“把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。”这是翻译任务，不应自行扩展成 Claude 模型迁移或 Prompt 审计。
+
+## 子命令与非交互审计
+
+| 子命令 | 行为 |
+| --- | --- |
+| `migrate` | 立即读取 `shared/model-migration.md`，先确认改动范围和目标模型，再按对应 breaking changes 执行。代码迁移完成后继续读取 `shared/prompt-audit.md`，审计范围内的 Prompt、工具描述和请求构造代码。 |
+| `prompt-audit` | 立即读取 `shared/prompt-audit.md`。从请求和仓库推断范围与目标模型，在报告开头写明假设，不中途停下来询问；完成 inventory、provenance 和模式扫描，交付完整审计报告与 proposed diff。只有用户明确要求清理或应用修改时才编辑文件。 |
+
+Prompt 审计的目标是识别能对应到已命名模式、并能说明为何不再适合目标模型的 dated instructions，不是机械缩短文本。业务背景、质量标准、工具契约、脆弱操作的精确步骤和仍可复现的约束属于 load-bearing content；没有发现时应报告 clean surface，并给出空 diff。
 
 ## 输出必须使用官方接口
 
@@ -57,6 +76,8 @@ license: Complete terms in LICENSE.txt
 SDK 方法、参数、类名和 import 必须来自本 Skill 对应语言文档或 `shared/live-sources.md` 指向的官方来源。网络不可用时，使用本地 reference 写最小实现，再通过编译器/解释器错误迭代，不反复猜测。
 
 ## 语言路由
+
+先判断任务是否涉及 SDK 代码。`prompt-audit`、模型选择、价格与限制、概念性 API 问题与具体编程语言无关，此时跳过语言识别，不向用户追问语言；只有读写 SDK 代码时才按下表路由。
 
 | 项目线索 | 读取目录 |
 | --- | --- |
@@ -102,6 +123,7 @@ Tool Runner、Managed Agents、Claude Agent SDK 不是同一产品：
 
 - 当前模型、上下文窗口和能力：`shared/models.md`。涉及当前价格或能力时优先调用 Models API 或读取官方实时来源。
 - 模型迁移：`shared/model-migration.md`。
+- Prompt、Skill 和工具描述中的旧模型遗留模式审计：`shared/prompt-audit.md`。
 - 平台差异：`shared/platform-availability.md`。
 - Prompt caching：`shared/prompt-caching.md`。
 - token 计算：`shared/token-counting.md`。
@@ -128,6 +150,7 @@ Claude API、模型 ID、beta header、thinking、effort、server tools 和平�
 - 不凭训练记忆构造模型 ID或日期后缀。
 - 用户问“现在支持什么”时，查询 Models API 或 `shared/live-sources.md`。
 - 迁移任务先读 `shared/model-migration.md` 的范围确认和 breaking changes。
+- 模型迁移完成后继续用 `shared/prompt-audit.md` 检查范围内的 Prompt、工具描述与请求构造代码；只有用户明确要求时才应用审计 diff。
 - 旧的 `budget_tokens`、server tool type、structured output 参数等写法必须按当前 reference 核对。
 - Bedrock、Vertex、Microsoft Foundry 和 Claude Platform on AWS 的能力不能互相推断，读取 `shared/platform-availability.md`。
 

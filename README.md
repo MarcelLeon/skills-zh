@@ -4,7 +4,7 @@
 
 这是 [Anthropic Agent Skills](https://github.com/anthropics/skills) 的中文本土化维护版本。项目不以逐句翻译为目标，而是让 Skill 更容易被中文用户自然触发，并在中文开发、办公和内容场景中给出可执行结果。
 
-当前包含 17 个 Skill，已审计至上游 `f17010c`（2026-08-07）。
+当前包含 17 个 Skill，已审计至上游 `f6656c1`（2026-08-13）。
 
 ## 本项目做了什么
 
@@ -14,7 +14,7 @@
 - **上游能力同步**：脚本、安全修复、许可证和事实性技术参考尽量忠于官方版本。
 - **持续验收**：校验 Skill frontmatter、插件清单、同步基线和中文触发评测集。
 
-本周同步为 `claude-api` 补齐 Managed Agents 的 session/deployment 预算、`inference_geo`、仓库 Skills、Advisor 与多 Agent 分工参考，同时修正 agent version、Files API `purpose`、`vault_ids` 更新边界等事实。中文入口新增预算恢复、数据驻留和仓库指令信任边界的真实任务路由。
+本周同步为 `claude-api` 新增 `prompt-audit`：它先盘点 system prompt、Skill、工具描述、few-shot 与请求构造代码，再结合 Git provenance 查找旧模型留下的具体模式，输出逐条 findings 和 proposed diff。中文入口新增“旧客服 Prompt 清理”和“模型迁移后审计”两个真实任务路由，同时明确审计不是按长度删内容，业务上下文、工具契约与仍可复现的约束必须保留。
 
 详细规则见 [LOCALIZATION.md](LOCALIZATION.md)，同步方法见 [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md)。
 每周技术内容的生成和传播遵循 [ARTICLE_PLAYBOOK.md](ARTICLE_PLAYBOOK.md)。
@@ -100,6 +100,6 @@ python3 scripts/validate_repository.py
 
 ## English summary
 
-skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 17 skills and is reviewed against upstream commit `f17010c`.
+skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 17 skills and is reviewed against upstream commit `f6656c1`.
 
 See [LOCALIZATION.md](LOCALIZATION.md) for the localization contract and [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md) for the weekly synchronization workflow.
