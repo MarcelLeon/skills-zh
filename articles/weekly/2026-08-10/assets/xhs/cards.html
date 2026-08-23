@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>skills-zh 2026-08-10 小红书发布卡片</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #050b18; }
+    body {
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: #f7fbff;
+      width: 1080px;
+    }
+    .card {
+      position: relative;
+      width: 1080px;
+      height: 1440px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 78% 22%, rgba(39, 159, 255, .20), transparent 38%),
+        linear-gradient(150deg, #07142b 0%, #061022 52%, #030816 100%);
+      page-break-after: always;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(91, 177, 255, .055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(91, 177, 255, .055) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: linear-gradient(to bottom, black, transparent 78%);
+    }
+    .hero {
+      position: absolute;
+      width: 1080px;
+      height: 1440px;
+      object-fit: cover;
+      inset: 0;
+      opacity: .34;
+      filter: saturate(.92) contrast(1.08);
+    }
+    .shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(2, 8, 22, .08), rgba(2, 8, 22, .72) 56%, #030816 82%);
+    }
+    .content { position: relative; z-index: 2; height: 100%; padding: 74px 76px 68px; display: flex; flex-direction: column; }
+    .eyebrow { color: #70d8ff; font-size: 25px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    .release { margin-top: 16px; color: rgba(231, 243, 255, .58); font-size: 22px; letter-spacing: 1px; }
+    h1 { margin: 0; font-size: 84px; line-height: 1.08; letter-spacing: -3px; max-width: 900px; }
+    h2 { margin: 20px 0 0; font-size: 58px; line-height: 1.16; letter-spacing: -2px; }
+    .sub { margin-top: 25px; max-width: 850px; font-size: 30px; line-height: 1.55; color: rgba(240, 248, 255, .78); }
+    .cover .content { justify-content: flex-end; padding-bottom: 88px; }
+    .cover .hero { opacity: .92; }
+    .cover .shade { background: linear-gradient(to bottom, rgba(2, 8, 22, .12), rgba(2, 8, 22, .18) 35%, rgba(2, 8, 22, .92) 76%, #020713 100%); }
+    .cover h1 { margin-top: 18px; }
+    .pill-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 34px; }
+    .pill { border: 1px solid rgba(108, 216, 255, .42); background: rgba(14, 56, 92, .46); padding: 12px 20px; border-radius: 999px; color: #d9f5ff; font-size: 22px; }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .index { color: rgba(151, 212, 255, .34); font-size: 72px; font-weight: 800; line-height: 1; }
+    .rule { height: 1px; background: linear-gradient(90deg, #38c6ff, rgba(56, 198, 255, 0)); margin: 34px 0 42px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 50px; }
+    .metric { padding: 30px 24px; border: 1px solid rgba(99, 188, 255, .24); border-radius: 24px; background: rgba(6, 24, 51, .72); backdrop-filter: blur(14px); }
+    .metric strong { display: block; font-size: 54px; color: #80ddff; line-height: 1; }
+    .metric span { display: block; margin-top: 16px; color: rgba(235, 245, 255, .68); font-size: 21px; line-height: 1.4; }
+    .panel { margin-top: 36px; padding: 34px 36px; border: 1px solid rgba(94, 186, 255, .22); border-radius: 26px; background: linear-gradient(135deg, rgba(11, 36, 74, .82), rgba(5, 18, 42, .72)); }
+    .panel.amber { border-color: rgba(255, 180, 67, .30); background: linear-gradient(135deg, rgba(81, 45, 9, .42), rgba(8, 22, 47, .80)); }
+    .panel.green { border-color: rgba(62, 218, 162, .32); background: linear-gradient(135deg, rgba(12, 65, 54, .44), rgba(7, 22, 43, .82)); }
+    .panel-title { font-size: 30px; font-weight: 750; }
+    .panel-body { margin-top: 14px; font-size: 25px; line-height: 1.58; color: rgba(240, 248, 255, .76); }
+    .steps { display: grid; gap: 16px; margin-top: 42px; }
+    .step { display: grid; grid-template-columns: 64px 1fr; gap: 20px; align-items: start; padding: 23px 25px; border-radius: 22px; background: rgba(8, 27, 57, .70); border: 1px solid rgba(98, 193, 255, .18); }
+    .step-num { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 16px; background: linear-gradient(135deg, #24b9ff, #4369ff); font-size: 25px; font-weight: 800; }
+    .step h3 { margin: 0; font-size: 29px; }
+    .step p { margin: 8px 0 0; color: rgba(234, 245, 255, .68); font-size: 22px; line-height: 1.5; }
+    .quote { margin-top: 42px; padding: 33px 36px; border-left: 5px solid #47caff; border-radius: 0 22px 22px 0; background: rgba(9, 34, 69, .66); font-size: 29px; line-height: 1.55; color: rgba(246, 251, 255, .90); }
+    .footer { position: absolute; left: 76px; right: 76px; bottom: 68px; display: flex; justify-content: space-between; align-items: center; color: rgba(209, 230, 248, .42); font-size: 19px; letter-spacing: .5px; }
+    .status { display: flex; gap: 11px; align-items: center; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; background: #48dda8; box-shadow: 0 0 18px rgba(72, 221, 168, .8); }
+    .cta { margin-top: 52px; padding: 35px 38px; border-radius: 26px; background: linear-gradient(135deg, #0f70d9, #1747c8); box-shadow: 0 20px 60px rgba(17, 95, 214, .30); }
+    .cta strong { display: block; font-size: 34px; }
+    .cta span { display: block; margin-top: 10px; color: rgba(239, 248, 255, .76); font-size: 22px; line-height: 1.5; }
+    .warning { color: #ffd486; }
+  </style>
+</head>
+<body>
+  <section class="card cover" id="card-01">
+    <img class="hero" src="hero-generated.png" alt="" />
+    <div class="shade"></div>
+    <div class="content">
+      <div class="eyebrow">skills-zh · Weekly Release</div>
+      <h1>Managed Agents<br/>生产治理能力更新</h1>
+      <div class="sub">预算、数据驻留、仓库 Skills、Advisor 与多 Agent 编排，一次同步到中文任务入口。</div>
+      <div class="pill-row"><span class="pill">2026.08.10</span><span class="pill">Upstream f17010c</span><span class="pill">Draft PR #1</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="card-02">
+    <div class="content">
+      <div class="top"><div><div class="eyebrow">Release Overview</div><div class="release">本周更新范围</div></div><div class="index">02</div></div>
+      <h2>从“能跑”走向<br/>“可治理、可审计”</h2>
+      <div class="rule"></div>
+      <div class="metric-grid">
+        <div class="metric"><strong>1</strong><span>个上游实质提交</span></div>
+        <div class="metric"><strong>18</strong><span>个 claude-api 文件变化</span></div>
+        <div class="metric"><strong>17</strong><span>个事实 reference 对齐上游</span></div>
+      </div>
+      <div class="panel"><div class="panel-title">本期核心</div><div class="panel-body">补齐 Managed Agents 进入生产前最容易写错的成本、合规、信任与协作边界。</div></div>
+      <div class="quote">不是把英文逐句翻完，而是让中文用户说出真实任务时，能被路由到正确事实与安全边界。</div>
+      <div class="footer"><span>skills-zh Weekly Release</span><span>02 / 07</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="card-03">
+    <div class="content">
+      <div class="top"><div><div class="eyebrow">Cost Governance</div><div class="release">成本治理</div></div><div class="index">03</div></div>
+      <h2>Session Budget<br/>是美元硬上限</h2>
+      <div class="rule"></div>
+      <div class="panel amber"><div class="panel-title">budget_reached</div><div class="panel-body">达到上限后 Session 暂停，历史与 sandbox 保留。普通消息不能恢复，必须修改或移除预算。</div></div>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div><h3>Session</h3><p>预算只能创建时加入；移除后不能重新加入。</p></div></div>
+        <div class="step"><div class="step-num">2</div><div><h3>Deployment</h3><p>预算复制到后续 Session；可清除并再次加入。</p></div></div>
+        <div class="step"><div class="step-num">3</div><div><h3>不要混用</h3><p>它不是 Messages API 的 token 型 task_budget。</p></div></div>
+      </div>
+      <div class="footer"><span>能力更新 01</span><span>03 / 07</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="card-04">
+    <div class="content">
+      <div class="top"><div><div class="eyebrow">Compliance & Trust</div><div class="release">合规与信任</div></div><div class="index">04</div></div>
+      <h2>推理区域与仓库指令<br/>都要纳入治理</h2>
+      <div class="rule"></div>
+      <div class="panel"><div class="panel-title">inference_geo</div><div class="panel-body">Managed Agents 将 geo 写在 model 内。Coordinator、Worker 与 Advisor 必须全部一致，或全部不设置。</div></div>
+      <div class="panel amber"><div class="panel-title">.claude/skills</div><div class="panel-body">Cloud Session 启动时扫描仓库根目录一层 Skill。谁能修改这个目录，谁就能修改 Agent 指令。</div></div>
+      <div class="quote">仓库写权限，不再只是代码权限，也是 Agent 行为权限。</div>
+      <div class="footer"><span>能力更新 02</span><span>04 / 07</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="card-05">
+    <div class="content">
+      <div class="top"><div><div class="eyebrow">Agent Orchestration</div><div class="release">协作编排</div></div><div class="index">05</div></div>
+      <h2>多 Agent 不先堆角色<br/>先验证分工价值</h2>
+      <div class="rule"></div>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div><h3>从 self 开始</h3><p>先验证任务是否真的值得委派。</p></div></div>
+        <div class="step"><div class="step-num">2</div><div><h3>增加低成本 Worker</h3><p>搜索、阅读、抽取交给更便宜的模型。</p></div></div>
+        <div class="step"><div class="step-num">3</div><div><h3>再增加 Specialist</h3><p>只有工具和职责确实不同，才加入 Reviewer、Test Writer。</p></div></div>
+      </div>
+      <div class="panel green"><div class="panel-title">Advisor</div><div class="panel-body">通过专用 roster 入口配置，建议由 thread events 交付；不能与 Messages API Advisor tool 参数混用。</div></div>
+      <div class="footer"><span>能力更新 03</span><span>05 / 07</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="card-06">
+    <div class="content">
+      <div class="top"><div><div class="eyebrow">Localization & Verification</div><div class="release">中文本土化与验收</div></div><div class="index">06</div></div>
+      <h2>中文入口重做<br/>事实 reference 不改写</h2>
+      <div class="rule"></div>
+      <div class="metric-grid">
+        <div class="metric"><strong>3</strong><span>个新增中文 few-shot</span></div>
+        <div class="metric"><strong>6</strong><span>个 should_trigger</span></div>
+        <div class="metric"><strong>3</strong><span>个 should_not_trigger</span></div>
+      </div>
+      <div class="panel green"><div class="panel-title">验证已通过</div><div class="panel-body">17 Skills 仓库门禁、quick validate、Python/Shell 语法、Skill 打包、ZIP 完整性、文章 payload 与远端 CI。</div></div>
+      <div class="quote">真实中文场景：25 美元代码审查预算、US inference + Advisor、仓库 Skills 信任边界。</div>
+      <div class="footer"><span>交付证据</span><span>06 / 07</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="card-07">
+    <img class="hero" src="hero-generated.png" alt="" />
+    <div class="shade"></div>
+    <div class="content">
+      <div class="top"><div><div class="eyebrow">Delivery Status</div><div class="release">交付状态</div></div><div class="index">07</div></div>
+      <h2>发布包已就绪<br/>边界仍保持诚实</h2>
+      <div class="rule"></div>
+      <div class="panel green"><div class="panel-title status"><span class="dot"></span>Draft PR #1 · CI Passed</div><div class="panel-body">独立分支已推送，企业发布说明与小红书 7 张卡片已准备。</div></div>
+      <div class="panel amber"><div class="panel-title warning">仍未声明线上实测</div><div class="panel-body">本次未调用真实 Managed Agents beta API，因此预算暂停、geo pin 与 Advisor 的账号运行态仍是明确限制。</div></div>
+      <div class="cta"><strong>查看完整发布说明</strong><span>github.com/MarcelLeon/skills-zh<br/>Upstream f17010c · 2026.08.10</span></div>
+      <div class="footer"><span>skills-zh Weekly Release</span><span>07 / 07</span></div>
+    </div>
+  </section>
+</body>
+</html>

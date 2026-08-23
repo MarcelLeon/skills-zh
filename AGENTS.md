@@ -10,7 +10,7 @@ There is no repository-wide build. Use Python 3.11, then validate and package th
 
 ```bash
 python3 skills/skill-creator/scripts/quick_validate.py skills/<skill-name>
-python3 skills/skill-creator/scripts/package_skill.py skills/<skill-name> /tmp/skill-dist
+PYTHONPATH=skills/skill-creator python3 -m scripts.package_skill skills/<skill-name> /tmp/skill-dist
 python3 scripts/validate_repository.py
 python3 scripts/upstream_diff_report.py
 python3 -m compileall skills/<skill-name>
