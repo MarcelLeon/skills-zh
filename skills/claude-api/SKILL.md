@@ -1,6 +1,6 @@
 ---
 name: claude-api
-description: "构建、迁移、审计或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、Managed Agents/CMA、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills，以及审查旧模型留下的 Prompt/系统提示词/Skill/tool description、清理 prompt cruft、判断提示词是否过时、迁移模型时同步检查提示词行为。也覆盖 Bedrock/Vertex/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
+description: "构建、升级、迁移、审计或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、Managed Agents/CMA、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills，Anthropic SDK 大版本升级（含 Python anthropic 0.x→1.x、httpx2、Python 版本下限与 removed API），以及审查旧模型留下的 Prompt/系统提示词/Skill/tool description、清理 prompt cruft、判断提示词是否过时、迁移模型时同步检查提示词行为。也覆盖 Bedrock/Vertex/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 与 SDK 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
 license: Complete terms in LICENSE.txt
 ---
 
@@ -51,9 +51,19 @@ license: Complete terms in LICENSE.txt
 
 **路由：**先读 `shared/model-migration.md` 完成目标模型的 breaking changes，再读 `shared/prompt-audit.md` 审计范围内的 Prompt、工具描述与 request builder。API 已替代的脚手架要连同调用方和旧测试一起提出修改，并用迁移后的行为 probe 验证。
 
+**输入：**“这个 Python 服务还锁在 `anthropic==0.x`，自定义 `httpx` transport、异步 `with_raw_response` 和旧 Text Completions 都在用。请升级到 1.x，范围是 `services/agent/` 和根目录依赖文件。”
+
+**路由：**立即读取 `python/claude-api/sdk-upgrade.md`。先检查工作区、依赖声明、当前版本与已发布的最新 1.x，再按 inventory 分类命中；分别处理 Python ≥3.10 决策、SDK 边界上的 `httpx2` 对象、async raw response 的 `await`、Messages 迁移和相关测试，最后重跑清单、compileall、类型检查与测试并输出决策/限制报告。
+
+**输入：**“跑 `/claude-api upgrade python`，把我们项目的 SDK 升一下。”
+
+**路由：**这是范围不明确的大版本升级请求。读 `python/claude-api/sdk-upgrade.md` 后先给出一个范围确认问题：整个工作目录、某个子目录或明确文件；把根目录依赖清单与 lockfile 说明为随代码范围一并处理。未确认范围前不编辑，也不把 SDK 升级误当成模型迁移。
+
 **不应触发：**“这个项目明确使用 OpenAI Responses API，帮我补 GPT 工具调用。”此时继续使用对应 provider，不引入 Anthropic 依赖。
 
 **不应触发：**“把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。”这是翻译任务，不应自行扩展成 Claude 模型迁移或 Prompt 审计。
+
+**相邻但不同：**“只把模型从 Sonnet 4.6 换成 Opus 5，不改 `anthropic` 包版本。”这是 `migrate` 模型迁移，不是 `upgrade` SDK 大版本升级。
 
 ## 子命令与非交互审计
 
@@ -61,6 +71,7 @@ license: Complete terms in LICENSE.txt
 | --- | --- |
 | `migrate` | 立即读取 `shared/model-migration.md`，先确认改动范围和目标模型，再按对应 breaking changes 执行。代码迁移完成后继续读取 `shared/prompt-audit.md`，审计范围内的 Prompt、工具描述和请求构造代码。 |
 | `prompt-audit` | 立即读取 `shared/prompt-audit.md`。从请求和仓库推断范围与目标模型，在报告开头写明假设，不中途停下来询问；完成 inventory、provenance 和模式扫描，交付完整审计报告与 proposed diff。只有用户明确要求清理或应用修改时才编辑文件。 |
+| `upgrade` | 升级 Anthropic SDK 包的大版本，当前内置 Python `anthropic` 0.x→1.x。立即读取 `python/claude-api/sdk-upgrade.md`；先确认范围、当前版本与已发布目标版本，再完成 inventory、逐项迁移、验证和报告。若目标语言没有 `sdk-upgrade.md`，明确说明当前未内置该语言指南，并从 `shared/live-sources.md` 指向官方 CHANGELOG；不要套用 Python 规则。 |
 
 Prompt 审计的目标是识别能对应到已命名模式、并能说明为何不再适合目标模型的 dated instructions，不是机械缩短文本。业务背景、质量标准、工具契约、脆弱操作的精确步骤和仍可复现的约束属于 load-bearing content；没有发现时应报告 clean surface，并给出空 diff。
 
@@ -123,6 +134,7 @@ Tool Runner、Managed Agents、Claude Agent SDK 不是同一产品：
 
 - 当前模型、上下文窗口和能力：`shared/models.md`。涉及当前价格或能力时优先调用 Models API 或读取官方实时来源。
 - 模型迁移：`shared/model-migration.md`。
+- Anthropic SDK 大版本升级：`{lang}/claude-api/sdk-upgrade.md`；当前只内置 Python 0.x→1.x，其他语言读取 `shared/live-sources.md` 中对应 SDK CHANGELOG。
 - Prompt、Skill 和工具描述中的旧模型遗留模式审计：`shared/prompt-audit.md`。
 - 平台差异：`shared/platform-availability.md`。
 - Prompt caching：`shared/prompt-caching.md`。
@@ -150,6 +162,7 @@ Claude API、模型 ID、beta header、thinking、effort、server tools 和平�
 - 不凭训练记忆构造模型 ID或日期后缀。
 - 用户问“现在支持什么”时，查询 Models API 或 `shared/live-sources.md`。
 - 迁移任务先读 `shared/model-migration.md` 的范围确认和 breaking changes。
+- SDK 大版本升级先读对应语言的 `sdk-upgrade.md`，不要把包版本升级与 Claude 模型迁移混为一谈；写入精确 pin 前先验证目标版本已发布。
 - 模型迁移完成后继续用 `shared/prompt-audit.md` 检查范围内的 Prompt、工具描述与请求构造代码；只有用户明确要求时才应用审计 diff。
 - 旧的 `budget_tokens`、server tool type、structured output 参数等写法必须按当前 reference 核对。
 - Bedrock、Vertex、Microsoft Foundry 和 Claude Platform on AWS 的能力不能互相推断，读取 `shared/platform-availability.md`。
