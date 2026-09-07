@@ -4,7 +4,7 @@
 
 这是 [Anthropic Agent Skills](https://github.com/anthropics/skills) 的中文本土化维护版本。项目不以逐句翻译为目标，而是让 Skill 更容易被中文用户自然触发，并在中文开发、办公和内容场景中给出可执行结果。
 
-当前包含 19 个 Skill，已审计至上游 `3b3fad9`（2026-08-21）。
+当前包含 19 个 Skill，已审计至上游 `41bbe19`（2026-09-03）。
 
 ## 本项目做了什么
 
@@ -14,7 +14,7 @@
 - **上游能力同步**：脚本、安全修复、许可证和事实性技术参考尽量忠于官方版本。
 - **持续验收**：校验 Skill frontmatter、插件清单、同步基线和中文触发评测集。
 
-本周同步新增 `academy-guide` 与 `discernment-nudge`，并为 `claude-api` 加入 Python SDK 0.x→1.x 的 `upgrade` 路由。前两者分别解决“只在真正想学习时推荐实时 Academy 内容”和“只在可行动回答后追加一次具体辨别问题”；SDK 指南则把 Python 版本下限、`httpx2` 边界、异步 raw response、Text Completions 移除与 Bedrock region 等变化组织成可扫描、可验证的升级流程。中文本土化重点不是逐句翻译，而是把强匹配、近似反例和用户决策边界写进入口与评测。
+本周同步更新 `claude-api` 与 `frontend-design`。前者加入基于 Usage/Cost 数据的 `cost-optimize` 路由、组织 Admin API 参考，以及 Fable/Mythos 5.1、Managed Agents 和多语言 SDK 的最新事实；中文入口要求先做 token profile、先处理 free wins，并在真实模型评测花费前获得确认。后者把常见 SaaS 卡片套件、全大写眉题、单词变色、散落动效等通用默认变成可执行的反模板检查，同时补足中文长标题、行长和字体角色的验收。
 
 详细规则见 [LOCALIZATION.md](LOCALIZATION.md)，同步方法见 [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md)。
 每周技术内容的生成和传播遵循 [ARTICLE_PLAYBOOK.md](ARTICLE_PLAYBOOK.md)。
@@ -103,6 +103,6 @@ python3 scripts/validate_repository.py
 
 ## English summary
 
-skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 19 skills and is reviewed against upstream commit `3b3fad9`.
+skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 19 skills and is reviewed against upstream commit `41bbe19`.
 
 See [LOCALIZATION.md](LOCALIZATION.md) for the localization contract and [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md) for the weekly synchronization workflow.
