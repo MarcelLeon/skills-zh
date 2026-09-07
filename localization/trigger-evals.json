@@ -42,14 +42,17 @@
         "这套客服 Agent 的 system prompt 从 Claude 3.5 时代一路打补丁，帮我审计仓库里的提示词、Skills 和 tool descriptions，先给 findings 和 proposed diff，不要直接改。",
         "我们正迁移到 Claude Opus 5，代码参数已经更新，请继续清掉旧模型时代的 assistant prefill、think step by step 和过度触发式工具描述。",
         "这个 Python 服务锁在 anthropic 0.x，还用了自定义 httpx transport 和异步 with_raw_response；请把 services/agent 与根目录依赖升级到 1.x 并跑类型检查。",
-        "执行 /claude-api upgrade python src/，盘点旧 Text Completions、sampling 参数和 Bedrock region，给出迁移决策与验证报告。"
+        "执行 /claude-api upgrade python src/，盘点旧 Text Completions、sampling 参数和 Bedrock region，给出迁移决策与验证报告。",
+        "近三个月 Claude API 账单明显上涨，先用 usage 或 Admin API 做 token profile，再按节省上限给 cost-optimize 方案；未经确认不要跑付费评测。",
+        "我们要用 Anthropic Admin API 管组织成员、workspace、API key、服务账号和 GitHub Actions WIF，请区分 admin key 与 org:admin OAuth。"
       ],
       "should_not_trigger": [
         "这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。",
         "给 GitHub Actions 的每周构建配置云账单预算告警，不涉及 Claude 或任何 LLM。",
         "我们用 LangGraph 和 Gemini 自建多 Agent，帮我加一个 reviewer 节点，不要引入 Anthropic。",
         "把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。",
-        "只把 Claude 模型从 Sonnet 4.6 换成 Opus 5，anthropic SDK 包版本保持不变。"
+        "只把 Claude 模型从 Sonnet 4.6 换成 Opus 5，anthropic SDK 包版本保持不变。",
+        "分析 AWS 账单里的 EC2 成本并优化预留实例，不涉及 Claude、Anthropic 或任何 LLM 调用。"
       ]
     },
     "discernment-nudge": {
@@ -78,9 +81,14 @@
     "frontend-design": {
       "should_trigger": [
         "给国产开发者工具做一个有辨识度的中文落地页，不要紫色渐变 AI 模板。",
-        "这个 React 控制台功能都齐了，但视觉太像默认后台，请重新做设计系统和关键页面。"
+        "这个 React 控制台功能都齐了，但视觉太像默认后台，请重新做设计系统和关键页面。",
+        "给投研团队重做财务看板，别把指标和表格全塞进同款圆角卡片；同时处理中文长标题、数字对齐和可读行长。",
+        "这个中文品牌故事页满是全大写眉题、等宽小标签和标题单词变色，帮我按真实主题重做视觉层级和移动端排版。"
       ],
-      "should_not_trigger": ["只修复这个按钮点击后没有发请求的 bug，不要调整样式。"]
+      "should_not_trigger": [
+        "只修复这个按钮点击后没有发请求的 bug，不要调整样式。",
+        "只检查这页中文文案有没有错别字、全半角和标点问题，不调整排版与视觉。"
+      ]
     },
     "internal-comms": {
       "should_trigger": [
