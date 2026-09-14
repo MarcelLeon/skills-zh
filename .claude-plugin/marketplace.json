@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Anthropic Agent Skills 的中文本土化适配版本",
-    "version": "1.0.1"
+    "version": "1.0.4"
   },
   "plugins": [
     {
@@ -43,11 +43,29 @@
     },
     {
       "name": "claude-api",
-      "description": "面向中文开发者的 Claude API、SDK、Managed Agents、多 Agent 编排、模型迁移与 Prompt 审计参考",
+      "description": "面向中文开发者的 Claude API 成本优化、组织 Admin API、SDK 升级、Managed Agents 权限与交互调试、模型迁移及 Prompt 审计参考",
       "source": "./",
       "strict": false,
       "skills": [
         "./skills/claude-api"
+      ]
+    },
+    {
+      "name": "academy-guide",
+      "description": "用户想学习 Claude 产品时，从实时 Claude Academy 目录推荐强匹配课程、教程或用例",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/academy-guide"
+      ]
+    },
+    {
+      "name": "discernment-nudge",
+      "description": "在可行动的实质答案后追加两三个具体问题，帮助核对事实、追问推理并补足上下文",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/discernment-nudge"
       ]
     }
   ]
