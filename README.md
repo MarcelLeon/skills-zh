@@ -4,7 +4,7 @@
 
 这是 [Anthropic Agent Skills](https://github.com/anthropics/skills) 的中文本土化维护版本。项目不以逐句翻译为目标，而是让 Skill 更容易被中文用户自然触发，并在中文开发、办公和内容场景中给出可执行结果。
 
-当前包含 19 个 Skill，已审计至上游 `41bbe19`（2026-09-03）。
+当前包含 19 个 Skill，已审计至上游 `34040c9`（2026-09-10）。
 
 ## 本项目做了什么
 
@@ -14,7 +14,7 @@
 - **上游能力同步**：脚本、安全修复、许可证和事实性技术参考尽量忠于官方版本。
 - **持续验收**：校验 Skill frontmatter、插件清单、同步基线和中文触发评测集。
 
-本周同步更新 `claude-api` 与 `frontend-design`。前者加入基于 Usage/Cost 数据的 `cost-optimize` 路由、组织 Admin API 参考，以及 Fable/Mythos 5.1、Managed Agents 和多语言 SDK 的最新事实；中文入口要求先做 token profile、先处理 free wins，并在真实模型评测花费前获得确认。后者把常见 SaaS 卡片套件、全大写眉题、单词变色、散落动效等通用默认变成可执行的反模板检查，同时补足中文长标题、行长和字体角色的验收。
+本周同步更新 `claude-api` 的 Managed Agents 权限与交互调试能力：新增 `auto` 权限策略的运行、拒绝、暂停三种结果，补齐 `evaluated_permission` / `evaluation` 审计字段与真实的 `deny_message`，并加入 `ant beta:sessions connect` 终端和本地 Web viewer 路由。中文入口强调 `auto` 不是人工审批门，客户端必须按事件结果而不是配置值分流。
 
 详细规则见 [LOCALIZATION.md](LOCALIZATION.md)，同步方法见 [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md)。
 每周技术内容的生成和传播遵循 [ARTICLE_PLAYBOOK.md](ARTICLE_PLAYBOOK.md)。
@@ -103,6 +103,6 @@ python3 scripts/validate_repository.py
 
 ## English summary
 
-skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 19 skills and is reviewed against upstream commit `41bbe19`.
+skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 19 skills and is reviewed against upstream commit `34040c9`.
 
 See [LOCALIZATION.md](LOCALIZATION.md) for the localization contract and [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md) for the weekly synchronization workflow.
