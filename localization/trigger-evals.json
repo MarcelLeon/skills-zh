@@ -44,7 +44,9 @@
         "这个 Python 服务锁在 anthropic 0.x，还用了自定义 httpx transport 和异步 with_raw_response；请把 services/agent 与根目录依赖升级到 1.x 并跑类型检查。",
         "执行 /claude-api upgrade python src/，盘点旧 Text Completions、sampling 参数和 Bedrock region，给出迁移决策与验证报告。",
         "近三个月 Claude API 账单明显上涨，先用 usage 或 Admin API 做 token profile，再按节省上限给 cost-optimize 方案；未经确认不要跑付费评测。",
-        "我们要用 Anthropic Admin API 管组织成员、workspace、API key、服务账号和 GitHub Actions WIF，请区分 admin key 与 org:admin OAuth。"
+        "我们要用 Anthropic Admin API 管组织成员、workspace、API key、服务账号和 GitHub Actions WIF，请区分 admin key 与 org:admin OAuth。",
+        "把 Managed Agents 的 MCP 工具权限改成 auto：安全调用自动执行，高风险拒绝，无法判断时再暂停确认；客户端要记录 evaluated_permission、evaluation 和 reason_code。",
+        "我想用 ant beta:sessions connect 接到正在运行的 session，在终端批准工具、发消息和 interrupt，并用 --web 查看所有多 Agent 线程。"
       ],
       "should_not_trigger": [
         "这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。",
@@ -52,7 +54,8 @@
         "我们用 LangGraph 和 Gemini 自建多 Agent，帮我加一个 reviewer 节点，不要引入 Anthropic。",
         "把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。",
         "只把 Claude 模型从 Sonnet 4.6 换成 Opus 5，anthropic SDK 包版本保持不变。",
-        "分析 AWS 账单里的 EC2 成本并优化预留实例，不涉及 Claude、Anthropic 或任何 LLM 调用。"
+        "分析 AWS 账单里的 EC2 成本并优化预留实例，不涉及 Claude、Anthropic 或任何 LLM 调用。",
+        "只帮我把 Claude Code 本地 settings.json 的权限模式改成 acceptEdits，不涉及 Claude API 或 Managed Agents。"
       ]
     },
     "discernment-nudge": {

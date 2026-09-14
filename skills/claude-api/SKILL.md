@@ -1,6 +1,6 @@
 ---
 name: claude-api
-description: "构建、升级、迁移、审计、降本或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Fable/Mythos/Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、API 账单与 cost optimize、Usage/Cost Admin API、组织成员/工作区/API key/WIF/CMEK 管理、Managed Agents/CMA、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills，Anthropic SDK 大版本升级（含 Python anthropic 0.x→1.x、httpx2、Python 版本下限与 removed API），以及审查旧模型留下的 Prompt/系统提示词/Skill/tool description、清理 prompt cruft、判断提示词是否过时、迁移模型时同步检查提示词行为。也覆盖 Bedrock/Vertex/Microsoft Foundry/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 与 SDK 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
+description: "构建、升级、迁移、审计、降本或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Fable/Mythos/Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、API 账单与 cost optimize、Usage/Cost Admin API、组织成员/工作区/API key/WIF/CMEK 管理、Managed Agents/CMA 的权限策略与工具审批（always_allow/always_ask/auto、evaluated_permission/evaluation）、ant beta:sessions connect、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills，Anthropic SDK 大版本升级（含 Python anthropic 0.x→1.x、httpx2、Python 版本下限与 removed API），以及审查旧模型留下的 Prompt/系统提示词/Skill/tool description、清理 prompt cruft、判断提示词是否过时、迁移模型时同步检查提示词行为。也覆盖 Bedrock/Vertex/Microsoft Foundry/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 与 SDK 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
 license: Complete terms in LICENSE.txt
 ---
 
@@ -43,6 +43,14 @@ license: Complete terms in LICENSE.txt
 
 **路由：**读取 `shared/managed-agents-environments.md` 与 `shared/managed-agents-tools.md`；确认只在 cloud sandbox、session 启动时扫描仓库根目录的一层 Skill，并把可提交 `.claude/skills` 的人员视为 Agent 指令信任边界。
 
+**输入：**“把 Managed Agents 的 MCP 工具设成 `auto`：安全调用自动跑，高风险直接拒绝，拿不准再让值班同学确认。客户端现在按配置的 policy 分支，顺便改成可审计的事件处理。”
+
+**路由：**读取 `shared/managed-agents-tools.md`、`shared/managed-agents-events.md` 与 `shared/managed-agents-client-patterns.md`。按事件的 `evaluated_permission` 而不是配置值分流：只确认 `ask`，对 `deny` 记录 `evaluation.type`、`reason_code` 并允许 session 继续；未知枚举透传，不把 `auto` 误写成人工审批门。若应用把不可信终端用户文本转发为 `user.message`，明确它会被评估器视为应用意图，高风险工具应保留 `always_ask`。
+
+**输入：**“线上 Managed Agents session 需要人工接管：终端里看完整记录、批准或拒绝工具、必要时 interrupt；浏览器里还要看到所有 worker 线程。”
+
+**路由：**读取 `shared/anthropic-cli.md` 的 `ant beta:sessions connect`。终端模式只跟随主线程，`--web` 本地 viewer 才覆盖多 Agent 的所有线程；说明 Ctrl+C 仅断开、session 继续运行，`--web` URL 需在两分钟内首次打开且凭据不离开本地 `ant` 进程。脚本场景继续使用 events stream/send，不拿交互 viewer 代替自动化接口。
+
 **输入：**“这套客服 Agent 的 system prompt 从 Claude 3.5 时代一直加补丁，现在又长又爱过度规划。盘点仓库里的提示词、Skill 和工具描述，找出真的过时项，先给审计报告和建议 diff，不要直接改。”
 
 **路由：**读取 `shared/prompt-audit.md`；从请求和仓库推断范围与目标模型，清点完整 Prompt surface 并结合 Git provenance 扫描明确的 dated patterns。报告必须给出 `file:line`、模式、过时原因与置信度，同时提供 proposed diff；保留业务上下文、工具契约和仍能复现的约束，不把“更短”当成结论。
@@ -74,6 +82,8 @@ license: Complete terms in LICENSE.txt
 **不应触发：**“这个项目明确使用 OpenAI Responses API，帮我补 GPT 工具调用。”此时继续使用对应 provider，不引入 Anthropic 依赖。
 
 **不应触发：**“把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。”这是翻译任务，不应自行扩展成 Claude 模型迁移或 Prompt 审计。
+
+**不应触发：**“只帮我把 Claude Code 本地 `settings.json` 的权限模式改成 `acceptEdits`，不涉及 Claude API 或 Managed Agents。”这是 Claude Code 客户端配置，不应套用 Managed Agents 的 `permission_policy`。
 
 **相邻但不同：**“只把模型从 Sonnet 4.6 换成 Opus 5，不改 `anthropic` 包版本。”这是 `migrate` 模型迁移，不是 `upgrade` SDK 大版本升级。
 
@@ -145,6 +155,8 @@ Tool Runner、Managed Agents、Claude Agent SDK 不是同一产品：
 
 ## Managed Agents 新能力分流
 
+- **权限评估**：`always_allow` 自动执行，`always_ask` 一律暂停，`auto` 由服务端逐次评估为 `allow`、`ask` 或 `deny`。客户端按事件的 `evaluated_permission` 分流，只对 `ask` 发送 `user.tool_confirmation`；拒绝原因使用 `deny_message`，不能向 `deny` 事件补确认。需要人工逐次审核的工具必须用 `always_ask`，因为 `auto` 不是人工检查点。
+- **会话接管**：交互排障读取 `shared/anthropic-cli.md` 的 `ant beta:sessions connect`；终端 viewer 只跟随主线程，`--web` viewer 覆盖多 Agent 的全部线程。非交互脚本仍使用 events stream/send。
 - **预算**：session budget 是按公开价计算的美元硬上限，只能创建 session 时加入；达到 `budget_reached` 后只有修改或移除预算能恢复，移除后不能重新加入。deployment budget 可在部署更新时清除和重新加入，并复制到后续每次触发的 session。
 - **数据驻留**：Managed Agents 的 `inference_geo` 写在 `model` 对象内，不是 Messages API 的顶层参数；multiagent roster 必须全部使用同一 geo 或全部不设置。
 - **仓库 Skills**：挂载 GitHub 仓库时，cloud sandbox 会在 session 启动时发现根目录 `.claude/skills/<skill-name>/`。它只扫描一次，且这些文件属于可执行 Agent 指令的信任边界。
@@ -164,7 +176,8 @@ Tool Runner、Managed Agents、Claude Agent SDK 不是同一产品：
 - token 计算：`shared/token-counting.md`。
 - 工具调用概念：`shared/tool-use-concepts.md`。
 - Agent 架构判断：`shared/agent-design.md`。
-- 鉴权与 `ant` CLI：`shared/anthropic-cli.md`。
+- 鉴权、`ant` CLI 与 `ant beta:sessions connect`：`shared/anthropic-cli.md`。
+- Managed Agents 工具权限、`auto` 三种结果与 `evaluated_permission` / `evaluation`：`shared/managed-agents-tools.md`、`shared/managed-agents-events.md` 和 `shared/managed-agents-client-patterns.md`。
 - 错误码：`shared/error-codes.md`。
 - 官方实时来源：`shared/live-sources.md`。
 - Managed Agents 总览：`shared/managed-agents-overview.md`，其余能力按 `shared/managed-agents-*.md` 读取。
