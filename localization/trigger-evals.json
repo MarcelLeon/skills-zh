@@ -1,6 +1,15 @@
 {
   "schema_version": 1,
   "skills": {
+    "academy-guide": {
+      "should_trigger": [
+        "我们团队第一次用 Claude Code，想从代码库理解到日常协作系统学一遍，有没有官方课程和上手路径？",
+        "Claude Projects 和 Artifacts 分别怎么用？先讲清楚功能，再给我一个匹配的 Academy 短教程。"
+      ],
+      "should_not_trigger": [
+        "把我上传的六份访谈稿直接整理成客户异议清单，任务做完即可，不需要学习资料。"
+      ]
+    },
     "algorithmic-art": {
       "should_trigger": [
         "帮我做一个带随机种子的粒子流场网页，每次输入同一个 seed 都能复现。",
@@ -31,13 +40,34 @@
         "这个 GitHub 仓库根目录已经有 .claude/skills，挂到 Anthropic cloud session 后想自动加载，同时审计一下指令注入风险。",
         "一个研究任务要并行看 20 份供应商材料，主 Agent 负责核验和汇总，阅读交给便宜 worker，给我 Managed Agents 实现。",
         "这套客服 Agent 的 system prompt 从 Claude 3.5 时代一路打补丁，帮我审计仓库里的提示词、Skills 和 tool descriptions，先给 findings 和 proposed diff，不要直接改。",
-        "我们正迁移到 Claude Opus 5，代码参数已经更新，请继续清掉旧模型时代的 assistant prefill、think step by step 和过度触发式工具描述。"
+        "我们正迁移到 Claude Opus 5，代码参数已经更新，请继续清掉旧模型时代的 assistant prefill、think step by step 和过度触发式工具描述。",
+        "这个 Python 服务锁在 anthropic 0.x，还用了自定义 httpx transport 和异步 with_raw_response；请把 services/agent 与根目录依赖升级到 1.x 并跑类型检查。",
+        "执行 /claude-api upgrade python src/，盘点旧 Text Completions、sampling 参数和 Bedrock region，给出迁移决策与验证报告。",
+        "近三个月 Claude API 账单明显上涨，先用 usage 或 Admin API 做 token profile，再按节省上限给 cost-optimize 方案；未经确认不要跑付费评测。",
+        "我们要用 Anthropic Admin API 管组织成员、workspace、API key、服务账号和 GitHub Actions WIF，请区分 admin key 与 org:admin OAuth。",
+        "把 Managed Agents 的 MCP 工具权限改成 auto：安全调用自动执行，高风险拒绝，无法判断时再暂停确认；客户端要记录 evaluated_permission、evaluation 和 reason_code。",
+        "我想用 ant beta:sessions connect 接到正在运行的 session，在终端批准工具、发消息和 interrupt，并用 --web 查看所有多 Agent 线程。",
+        "把 services/copilot 从 Claude Opus 5 迁到 Opus 5.5，处理 disabled thinking、forced tool choice 和 preserved-thinking 历史前缀，再跑回归。",
+        "客服 Agent 改了检索 Prompt，帮我从脱敏工单建一套 Claude eval，并按 train/validation/test 做 hillclimb，报告质量、token 和成本。",
+        "TypeScript 的 Claude 工具有几百 KB 参数，帮我启用 eager_input_streaming，并保证截断或 schema 不合法时绝不执行工具。"
       ],
       "should_not_trigger": [
         "这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。",
         "给 GitHub Actions 的每周构建配置云账单预算告警，不涉及 Claude 或任何 LLM。",
         "我们用 LangGraph 和 Gemini 自建多 Agent，帮我加一个 reviewer 节点，不要引入 Anthropic。",
-        "把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。"
+        "把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。",
+        "分析 AWS 账单里的 EC2 成本并优化预留实例，不涉及 Claude、Anthropic 或任何 LLM 调用。",
+        "只帮我把 Claude Code 本地 settings.json 的权限模式改成 acceptEdits，不涉及 Claude API 或 Managed Agents。",
+        "这个 eval runner 只比较本地正则表达式和人工标注，不调用 Claude、Anthropic 或任何 LLM。"
+      ]
+    },
+    "discernment-nudge": {
+      "should_trigger": [
+        "根据这些有限信息帮我制定下季度获客方案，给出预算比例、三个月效果预估和一封拿去向老板申请预算的邮件。",
+        "我准备接受这个异地工作机会；请结合薪酬、成长和家庭成本做多步分析，最后告诉我建议选哪一个。"
+      ],
+      "should_not_trigger": [
+        "请核验这份方案中的每个数据并给出处，无法验证的直接标出来；结尾不要再让我自行检查。"
       ]
     },
     "doc-coauthoring": {
@@ -57,9 +87,14 @@
     "frontend-design": {
       "should_trigger": [
         "给国产开发者工具做一个有辨识度的中文落地页，不要紫色渐变 AI 模板。",
-        "这个 React 控制台功能都齐了，但视觉太像默认后台，请重新做设计系统和关键页面。"
+        "这个 React 控制台功能都齐了，但视觉太像默认后台，请重新做设计系统和关键页面。",
+        "给投研团队重做财务看板，别把指标和表格全塞进同款圆角卡片；同时处理中文长标题、数字对齐和可读行长。",
+        "这个中文品牌故事页满是全大写眉题、等宽小标签和标题单词变色，帮我按真实主题重做视觉层级和移动端排版。"
       ],
-      "should_not_trigger": ["只修复这个按钮点击后没有发请求的 bug，不要调整样式。"]
+      "should_not_trigger": [
+        "只修复这个按钮点击后没有发请求的 bug，不要调整样式。",
+        "只检查这页中文文案有没有错别字、全半角和标点问题，不调整排版与视觉。"
+      ]
     },
     "internal-comms": {
       "should_trigger": [
