@@ -1,6 +1,6 @@
 ---
 name: claude-api
-description: "构建、升级、迁移、审计、降本或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Fable/Mythos/Opus/Sonnet/Haiku、模型选择与价格、流式输出、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、API 账单与 cost optimize、Usage/Cost Admin API、组织成员/工作区/API key/WIF/CMEK 管理、Managed Agents/CMA 的权限策略与工具审批（always_allow/always_ask/auto、evaluated_permission/evaluation）、ant beta:sessions connect、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills，Anthropic SDK 大版本升级（含 Python anthropic 0.x→1.x、httpx2、Python 版本下限与 removed API），以及审查旧模型留下的 Prompt/系统提示词/Skill/tool description、清理 prompt cruft、判断提示词是否过时、迁移模型时同步检查提示词行为。也覆盖 Bedrock/Vertex/Microsoft Foundry/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 与 SDK 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
+description: "构建、升级、迁移、评测、调优、审计、降本或排查 Claude API / Anthropic SDK 应用时必须使用本技能。触发包括：Claude、Anthropic、Fable/Mythos/Opus/Sonnet/Haiku、Claude Opus 5.5 / Sonnet 5.5、模型选择与价格、流式输出、eager_input_streaming、tool use、MCP、Prompt Caching、token 计数、批处理、Files API、为 Claude 应用搭 eval、审计 eval、按 train/validation/test 做 hillclimb、API 账单与 cost optimize、Usage/Cost Admin API、组织成员/工作区/API key/WIF/CMEK 管理、Managed Agents/CMA 的权限策略与工具审批（always_allow/always_ask/auto、evaluated_permission/evaluation）、ant beta:sessions connect、session 或 deployment 预算、inference_geo、Advisor、多 Agent 编排、GitHub 仓库 Skills、preserved thinking 兼容性与历史消息前缀排查，Anthropic SDK 大版本升级（含 Python anthropic 0.x→1.x、httpx2、Python 版本下限与 removed API），以及审查旧模型留下的 Prompt/系统提示词/Skill/tool description、清理 prompt cruft、判断提示词是否过时、迁移模型时同步检查提示词行为。也覆盖 Bedrock/Vertex/Microsoft Foundry/Claude Platform on AWS，以及用户没有指定供应商但明显要做 Agent、RAG、LLM Judge、自然语言生成/抽取/分类等 LLM 功能。若任务已明确使用 OpenAI/GPT、Gemini、Llama、Mistral、Cohere 或 Ollama，则不要触发，除非用户要求迁移到 Claude。API 与 SDK 变化快，必须先读本技能参考资料或官方实时来源，不能凭记忆回答。"
 license: Complete terms in LICENSE.txt
 ---
 
@@ -79,6 +79,18 @@ license: Complete terms in LICENSE.txt
 
 **路由：**先读取 `shared/model-migration.md` 的 Fable 5.1 章节，再核对 `shared/models.md` 与 `shared/platform-availability.md`。不要只替换模型 ID；必须检查 forced tool use、append-only history、thinking block 回放、`stop_reason: refusal`、fallback 与长请求的 streaming/timeout，并用目标平台支持矩阵约束实现。
 
+**输入：**“把 `services/copilot/` 从 Opus 5 迁到 Claude Opus 5.5。现在显式关了 thinking、强制指定工具，还会在每轮重写 system prompt；请给迁移 diff 和回归清单。”
+
+**路由：**读取 `shared/model-migration.md` 的 Claude Opus 5.5 章节与 `shared/preserved-thinking-migration.md`。先确认范围已经明确，再检查精确 model id、`disabled` thinking 的 400、forced tool use、effort、工具/消息前缀的 append-only 约束和 preserved-thinking 覆盖；需要真实 replay 时先估算费用并获得确认。
+
+**输入：**“客服 Agent 改了检索 Prompt，但大家只挑几个成功案例。帮我从脱敏工单建一套 eval，再按 train/validation/test 迭代，报告每版质量、成本和失败样本。”
+
+**路由：**先读取 `shared/evals/build-eval.md` 和 `shared/evals/eval-audit.md`，与用户确认输入、评分方式和付费运行预算；eval 可运行并通过健康检查后，再读 `shared/evals/eval-hillclimb.md`，冻结 test 集，逐版记录变更、分数、token/费用和停止条件，并用内置 report builder 生成报告，不自造另一套看板。
+
+**输入：**“TypeScript 的文件分析工具参数有几百 KB，tool input 总在最后一口气到达。请打开 eager input streaming，同时保证截断或坏 JSON 不会执行工具。”
+
+**路由：**读取 `typescript/claude-api/streaming.md`、`typescript/claude-api/tool-use.md` 与 `shared/tool-use-concepts.md` 的 Eager input streaming。只对 streaming + client tools 设置 `eager_input_streaming: true`，累计 `partial_json` 后按 schema 校验，先检查 `max_tokens` / `refusal`，解析或校验失败时返回明确的无副作用错误，不把不完整输入交给工具。
+
 **不应触发：**“这个项目明确使用 OpenAI Responses API，帮我补 GPT 工具调用。”此时继续使用对应 provider，不引入 Anthropic 依赖。
 
 **不应触发：**“把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。”这是翻译任务，不应自行扩展成 Claude 模型迁移或 Prompt 审计。
@@ -95,6 +107,9 @@ license: Complete terms in LICENSE.txt
 | `prompt-audit` | 立即读取 `shared/prompt-audit.md`。从请求和仓库推断范围与目标模型，在报告开头写明假设，不中途停下来询问；完成 inventory、provenance 和模式扫描，交付完整审计报告与 proposed diff。只有用户明确要求清理或应用修改时才编辑文件。 |
 | `upgrade` | 升级 Anthropic SDK 包的大版本，当前内置 Python `anthropic` 0.x→1.x。立即读取 `python/claude-api/sdk-upgrade.md`；先确认范围、当前版本与已发布目标版本，再完成 inventory、逐项迁移、验证和报告。若目标语言没有 `sdk-upgrade.md`，明确说明当前未内置该语言指南，并从 `shared/live-sources.md` 指向官方 CHANGELOG；不要套用 Python 规则。 |
 | `cost-optimize` | 立即读取 `shared/cost-optimization.md`。先建立范围、质量门槛和账单/token 基线，再按节省上限排序；先提出缓存、输入/循环/输出卫生和 Batch 等 free wins，后讨论 effort、预算与模型取舍。真实 API 评测会花钱，必须先给出预算并获得用户确认。 |
+| `build-eval` | 立即读取 `shared/evals/build-eval.md`，并先加载 `shared/evals/eval-audit.md` 作为健康检查。依次确认被评测应用、输入来源、评分方式、可运行脚本和实测费用；在用户明确确认输入、grader 与预算前，不启动付费全量运行。 |
+| `preserved-thinking-migration` | 立即读取 `shared/preserved-thinking-migration.md`。先确定范围、流量类型、平台/模型、质量线与基线；用三请求自检确认检查已生效，再捕获并比较连续请求。真实 replay 会花钱，先给预算并确认；每个原因单独成 diff、复测后保留或撤销，允许“无修改建议”为有效结论。 |
+| `hillclimb` | 立即读取 `shared/evals/eval-hillclimb.md`。先确认已有可运行 eval，否则转到 `build-eval`；明确可改项、禁改项、预算和停止条件后，按 read → propose → apply → run → record 循环，并保持 train/validation/test 隔离。 |
 
 Prompt 审计的目标是识别能对应到已命名模式、并能说明为何不再适合目标模型的 dated instructions，不是机械缩短文本。业务背景、质量标准、工具契约、脆弱操作的精确步骤和仍可复现的约束属于 load-bearing content；没有发现时应报告 clean surface，并给出空 diff。
 
@@ -171,6 +186,9 @@ Tool Runner、Managed Agents、Claude Agent SDK 不是同一产品：
 - 成本分析与优化：`shared/cost-optimization.md`；优先测量 Usage/Cost Admin API 或应用 usage 日志，执行付费评测前必须确认预算。
 - 组织成员、工作区、API key、rate limit、服务账号、WIF 与 CMEK：`shared/admin-api.md`。
 - Prompt、Skill 和工具描述中的旧模型遗留模式审计：`shared/prompt-audit.md`。
+- 为 Claude 应用建立 eval：`shared/evals/build-eval.md`；先读取 `shared/evals/eval-audit.md` 检查 case、harness、指标和 grader 是否真的能测出目标变化。
+- 使用既有 eval 做迭代调优：`shared/evals/eval-hillclimb.md`；成本优先的优化读取 `shared/evals/cost-hillclimb.md`，报告由 `shared/evals/report/build-report-lite.mjs` 与 runner scaffold 生成。
+- preserved thinking 兼容性迁移：`shared/preserved-thinking-migration.md`；差分与 replay 使用其目录中的 `prefix_diff.py`、`drop_block_probe.py`，真实请求前必须确认预算。
 - 平台差异：`shared/platform-availability.md`。
 - Prompt caching：`shared/prompt-caching.md`。
 - token 计算：`shared/token-counting.md`。
@@ -197,10 +215,12 @@ Claude API、模型 ID、beta header、thinking、effort、server tools 和平�
 
 - 不凭训练记忆构造模型 ID或日期后缀。
 - 用户问“现在支持什么”时，查询 Models API 或 `shared/live-sources.md`。
+- 默认模型与能力以 `shared/models.md` 为准；当前上游示例默认 Claude Opus 5.5（`claude-opus-5-5`），但迁移现有项目仍尊重用户指定目标并核对平台可用性。
 - 迁移任务先读 `shared/model-migration.md` 的范围确认和 breaking changes。
 - SDK 大版本升级先读对应语言的 `sdk-upgrade.md`，不要把包版本升级与 Claude 模型迁移混为一谈；写入精确 pin 前先验证目标版本已发布。
 - 模型迁移完成后继续用 `shared/prompt-audit.md` 检查范围内的 Prompt、工具描述与请求构造代码；只有用户明确要求时才应用审计 diff。
-- Fable/Mythos 5.1 等新模型不能只替换模型 ID；按迁移 reference 检查 forced tool use、thinking 回放、历史消息编辑、refusal fallback、数据保留与平台可用性。
+- Fable/Mythos 5.1、Claude Opus 5.5、Claude Sonnet 5.5 等新模型不能只替换模型 ID；按迁移 reference 检查 forced tool use、thinking/effort、历史消息编辑、refusal fallback、数据保留与平台可用性。Opus 5.5 和 Sonnet 5.5 对 `thinking: {type: "disabled"}` 的行为不能从旧模型外推。
+- 对 streaming + client tools 的大参数场景，按目标语言 reference 判断是否设置 `eager_input_streaming: true`；开启后 API 不再替客户端保证完整 schema，必须在执行工具前解析、校验并检查截断/refusal。
 - 旧的 `budget_tokens`、server tool type、structured output 参数等写法必须按当前 reference 核对。
 - Bedrock、Vertex、Microsoft Foundry 和 Claude Platform on AWS 的能力不能互相推断，读取 `shared/platform-availability.md`。
 
