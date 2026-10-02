@@ -4,7 +4,7 @@
 
 这是 [Anthropic Agent Skills](https://github.com/anthropics/skills) 的中文本土化维护版本。项目不以逐句翻译为目标，而是让 Skill 更容易被中文用户自然触发，并在中文开发、办公和内容场景中给出可执行结果。
 
-当前包含 19 个 Skill，已审计至上游 `34040c9`（2026-09-10）。
+当前包含 19 个 Skill，已审计至上游 `8a1541c`（2026-09-28）。
 
 ## 本项目做了什么
 
@@ -103,6 +103,6 @@ python3 scripts/validate_repository.py
 
 ## English summary
 
-skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 19 skills and is reviewed against upstream commit `34040c9`.
+skills-zh is a Chinese-localized adaptation of Anthropic Agent Skills. It preserves upstream scripts and factual references while redesigning triggers, examples, workflows, and acceptance checks for natural Chinese usage. The repository currently contains 19 skills and is reviewed against upstream commit `8a1541c`.
 
 See [LOCALIZATION.md](LOCALIZATION.md) for the localization contract and [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md) for the weekly synchronization workflow.

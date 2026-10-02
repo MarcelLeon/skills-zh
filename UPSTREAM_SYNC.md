@@ -1,6 +1,6 @@
 # 上游同步说明
 
-上游仓库为 `https://github.com/anthropics/skills.git`，本地 remote 名称统一为 `upstream`。当前已审计至 `34040c9`（2026-09-10），基线记录在 `sync/upstream-baseline.json`。
+上游仓库为 `https://github.com/anthropics/skills.git`，本地 remote 名称统一为 `upstream`。当前已审计至 `8a1541c`（2026-09-28），基线记录在 `sync/upstream-baseline.json`。
 
 ## 每周同步流程
 
