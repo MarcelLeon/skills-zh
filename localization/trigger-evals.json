@@ -49,7 +49,9 @@
         "我想用 ant beta:sessions connect 接到正在运行的 session，在终端批准工具、发消息和 interrupt，并用 --web 查看所有多 Agent 线程。",
         "把 services/copilot 从 Claude Opus 5 迁到 Opus 5.5，处理 disabled thinking、forced tool choice 和 preserved-thinking 历史前缀，再跑回归。",
         "客服 Agent 改了检索 Prompt，帮我从脱敏工单建一套 Claude eval，并按 train/validation/test 做 hillclimb，报告质量、token 和成本。",
-        "TypeScript 的 Claude 工具有几百 KB 参数，帮我启用 eager_input_streaming，并保证截断或 schema 不合法时绝不执行工具。"
+        "TypeScript 的 Claude 工具有几百 KB 参数，帮我启用 eager_input_streaming，并保证截断或 schema 不合法时绝不执行工具。",
+        "执行 /claude-api managed-agents-onboard deep-researcher，按内置 quickstart 逐步配置环境、vault、测试 session 和部署，不要跳过确认。",
+        "照这个 URL 的架构搭一个 Claude Managed Agent，但先区分官方与第三方来源，展示文件树、写路径和凭据去向，确认后再 ant apply：https://example.com/agent-playbook"
       ],
       "should_not_trigger": [
         "这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。",
@@ -58,7 +60,8 @@
         "把下面这段客服系统提示词翻译成中文，原意和结构都不要调整。",
         "分析 AWS 账单里的 EC2 成本并优化预留实例，不涉及 Claude、Anthropic 或任何 LLM 调用。",
         "只帮我把 Claude Code 本地 settings.json 的权限模式改成 acceptEdits，不涉及 Claude API 或 Managed Agents。",
-        "这个 eval runner 只比较本地正则表达式和人工标注，不调用 Claude、Anthropic 或任何 LLM。"
+        "这个 eval runner 只比较本地正则表达式和人工标注，不调用 Claude、Anthropic 或任何 LLM。",
+        "只帮我总结这个 Managed Agents quickstart 页面讲了什么，不创建 Agent、不写配置，也不执行 ant apply。"
       ]
     },
     "discernment-nudge": {
