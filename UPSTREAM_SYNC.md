@@ -10,7 +10,8 @@
 4. 对脚本、许可证和事实性 reference 尽量保持上游原样；对 `SKILL.md` 依据 `LOCALIZATION.md` 做中文重构。
 5. 更新中文触发词、真实中文 few-shot、近似反例及 `localization/trigger-evals.json`。
 6. 运行 `python3 scripts/validate_repository.py`，并对受影响脚本执行对应 smoke test。
-7. 更新基线 JSON，生成本次同步报告和多平台文章草稿；公开发布前必须人工确认预览。
+7. 更新基线 JSON，将脱敏的工程同步报告保存到 `sync/`。个人文章、素材、账号与发布记录保存到仓库外的私有工作区，不提交到任何公开分支或 PR。
+8. 提交前显式暂存工程文件，运行仓库校验并审阅暂存区；遵守 `PUBLIC_CONTENT.md`，不用 `git add -A` 混入运营产物。
 
 ## 冲突处理
 

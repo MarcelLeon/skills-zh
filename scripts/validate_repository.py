@@ -16,10 +16,53 @@ SKILLS_DIR = ROOT / "skills"
 VALIDATOR = SKILLS_DIR / "skill-creator" / "scripts" / "quick_validate.py"
 CJK_RE = re.compile(r"[\u3400-\u9fff]")
 VALIDATOR_PYTHON = os.environ.get("SKILLS_ZH_VALIDATOR_PYTHON", sys.executable)
+PRIVATE_ROOTS = {"articles", "private", "publishing", "content-ops"}
+PRIVATE_FILENAMES = {
+    "ARTICLE_PLAYBOOK.md", "publish-plan.md", "preview-status.md",
+    "preview-evidence.md", ".env", ".env.local",
+}
+PERSONAL_PATH_RE = re.compile(r"/Users/[A-Za-z0-9._-]+/")
 
 
 def fail(errors: list[str], message: str) -> None:
     errors.append(message)
+
+
+def is_private_file(raw_path: str) -> bool:
+    path = Path(raw_path)
+    return (
+        path.parts[0] in PRIVATE_ROOTS
+        or path.name in PRIVATE_FILENAMES
+        or any(part.endswith("_payload") for part in path.parts[:-1])
+        or (path.name.startswith(".env.") and path.name.endswith(".local"))
+    )
+
+
+def validate_public_content(errors: list[str]) -> None:
+    result = subprocess.run(
+        ["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=False,
+    )
+    if result.returncode:
+        fail(errors, "public-content check could not read the Git index")
+        return
+    for raw_path in result.stdout.decode("utf-8").split("\0"):
+        if not raw_path:
+            continue
+        if is_private_file(raw_path):
+            fail(errors, f"private content must not be tracked: {raw_path}")
+            continue
+        path = ROOT / raw_path
+        if not path.is_file():
+            continue
+        data = path.read_bytes()
+        if b"\0" in data:
+            continue
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        if PERSONAL_PATH_RE.search(text):
+            fail(errors, f"personal home path in tracked file: {raw_path}")
 
 
 def load_frontmatter(skill_md: Path) -> dict[str, str]:
@@ -146,6 +189,7 @@ def main() -> int:
     validate_localization_evals(errors, skill_names)
     validate_sync_baseline(errors, skill_names)
     validate_readme(errors)
+    validate_public_content(errors)
 
     if errors:
         print("Repository validation failed:")

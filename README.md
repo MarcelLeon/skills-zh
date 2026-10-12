@@ -17,7 +17,7 @@
 本周同步更新 `claude-api` 的三组能力：Claude Haiku 5.5 的迁移事实；处理数百条目、会超过 25 个子线程时使用的 Managed Agents dynamic workflows；以及 `limited.allowed_hosts` 同样约束服务端网页工具的网络边界。新增 `bug-hunter`、`explainer-video`、`performance-tuner`、`watchlist-scanner` 四个 workflow quickstart，中文入口补足按规模选 roster/workflow、预算告知、条件式 system prompt、关闭方式和单问单答不过度编排的边界。
 
 详细规则见 [LOCALIZATION.md](LOCALIZATION.md)，同步方法见 [UPSTREAM_SYNC.md](UPSTREAM_SYNC.md)。
-每周技术内容的生成和传播遵循 [ARTICLE_PLAYBOOK.md](ARTICLE_PLAYBOOK.md)。
+公开仓库只保留 Skill 源码、通用示例和脱敏的工程验证证据。个人文章、素材与发布记录保存在仓库外；边界见 [PUBLIC_CONTENT.md](PUBLIC_CONTENT.md)。
 
 ## Skill 目录
 

@@ -6,3 +6,17 @@ __pycache__/
 # 排除内部文档 (准备发布到 GitHub)
 docs/
 README.md.backup
+
+# 私有文章与运营资料不得进入公开仓库
+/articles/
+/ARTICLE_PLAYBOOK.md
+/private/
+/publishing/
+/content-ops/
+**/*_payload/
+publish-plan.md
+preview-status.md
+preview-evidence.md
+.env
+.env.local
+.env.*.local
