@@ -51,7 +51,10 @@
         "客服 Agent 改了检索 Prompt，帮我从脱敏工单建一套 Claude eval，并按 train/validation/test 做 hillclimb，报告质量、token 和成本。",
         "TypeScript 的 Claude 工具有几百 KB 参数，帮我启用 eager_input_streaming，并保证截断或 schema 不合法时绝不执行工具。",
         "执行 /claude-api managed-agents-onboard deep-researcher，按内置 quickstart 逐步配置环境、vault、测试 session 和部署，不要跳过确认。",
-        "照这个 URL 的架构搭一个 Claude Managed Agent，但先区分官方与第三方来源，展示文件树、写路径和凭据去向，确认后再 ant apply：https://example.com/agent-playbook"
+        "照这个 URL 的架构搭一个 Claude Managed Agent，但先区分官方与第三方来源，展示文件树、写路径和凭据去向，确认后再 ant apply：https://example.com/agent-playbook",
+        "有 600 份供应商合同要分阶段抽取、交叉核验并汇总，一个 session 的 25 个子线程不够；请用 Claude Managed Agents dynamic workflows，说明 token 预算和关闭方式。",
+        "把批量工单分类从 Claude Haiku 4.5 迁到 Haiku 5.5，清理 budget_tokens、temperature、assistant prefill 和旧 computer tool，并检查 preserved thinking 与 refusal。",
+        "Managed Agents 环境只允许 docs.example.cn，但 web search 还能返回其他域名；请按 limited allowed_hosts 和工具 domain 双重收紧，并默认关闭不用的网页工具。"
       ],
       "should_not_trigger": [
         "这个项目明确使用 OpenAI Responses API，帮我加一个 GPT 工具调用。",
@@ -61,7 +64,8 @@
         "分析 AWS 账单里的 EC2 成本并优化预留实例，不涉及 Claude、Anthropic 或任何 LLM 调用。",
         "只帮我把 Claude Code 本地 settings.json 的权限模式改成 acceptEdits，不涉及 Claude API 或 Managed Agents。",
         "这个 eval runner 只比较本地正则表达式和人工标注，不调用 Claude、Anthropic 或任何 LLM。",
-        "只帮我总结这个 Managed Agents quickstart 页面讲了什么，不创建 Agent、不写配置，也不执行 ant apply。"
+        "只帮我总结这个 Managed Agents quickstart 页面讲了什么，不创建 Agent、不写配置，也不执行 ant apply。",
+        "在 GitHub Actions 里按变更目录动态生成 matrix workflow，不涉及 Claude、Anthropic 或任何 LLM。"
       ]
     },
     "discernment-nudge": {
