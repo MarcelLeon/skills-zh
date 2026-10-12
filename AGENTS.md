@@ -30,3 +30,7 @@ Run both validators for every changed skill and update `localization/trigger-eva
 ## Commit & Pull Request Guidelines
 
 Use `sync(<skill>): 对齐 upstream <sha> 并完成中文本土化` for upstream alignment and concise imperative subjects otherwise. PRs must list affected skills, upstream commits, localization decisions, and validation results. Add sample artifacts for visual changes and call out license, dependency, or retained-English-reference changes.
+
+## Public Content Boundary
+
+Follow `PUBLIC_CONTENT.md`. Keep personal article drafts, publishing payloads, images, account mappings, preview evidence, and publishing operations records outside this public repository. Only sanitized engineering reports belong in `sync/`. Never commit `articles/` or the private publishing playbook. Stage intended engineering paths explicitly instead of `git add -A`; run the repository validator before pushing. Do not change upstream licenses or factual examples to remove required attribution.
