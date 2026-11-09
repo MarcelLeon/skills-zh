@@ -1,7 +1,7 @@
 ---
 name: pdf
 description: 只要任务涉及 PDF 输入或输出，就应优先使用本技能。包括：读取/抽取文本与表格、合并拆分、旋转页面、加水印、创建新 PDF、填写表单、加解密、提取图片、扫描件 OCR 等。用户提到 `.pdf` 文件名或要求交付 PDF 时都应触发。
-license: Proprietary. LICENSE.txt has complete terms
+license: Complete terms in LICENSE.txt
 ---
 
 # PDF 处理指南
@@ -10,6 +10,16 @@ license: Proprietary. LICENSE.txt has complete terms
 
 本技能覆盖常见 PDF 工作流（Python + 命令行）。  
 若要填写 PDF 表单，请额外阅读 [forms.md](forms.md)；更深入的扩展能力可看 [reference.md](reference.md)。
+
+## 中文任务 few-shot
+
+**输入：**“这份扫描版供应商报价.pdf 没有文字层，帮我 OCR 后提取表格，并标明每一行来自哪一页。”
+
+**执行：**先确认页面方向和扫描清晰度，逐页 OCR 并保留页码来源，再抽取表格、抽样核对识别结果；交付结构化数据和可追溯的 PDF 处理说明，不把低置信度内容当成确定事实。
+
+**输入：**“把三份培训材料 PDF 合成一份，统一加页码和内部水印，最后确认没有空白页或裁切。”
+
+**执行：**按用户指定顺序合并，生成页码与水印后重新渲染全部页面，检查页面尺寸、旋转方向、空白页、字体和边缘裁切，再交付最终 PDF。
 
 ## 快速开始
 
