@@ -1,6 +1,6 @@
 ---
 name: mcp-builder
-description: 创建高质量 MCP（Model Context Protocol）服务器的指南，使 LLM 能够通过精心设计的工具与外部服务交互。在构建 MCP 服务器以集成外部 API 或服务时使用，无论是在 Python (FastMCP) 还是 Node/TypeScript (MCP SDK) 中。
+description: 创建、改造、审查或迁移高质量 MCP（Model Context Protocol）服务器，让 LLM 通过设计清晰的工具与外部服务交互。当用户说“把这个 API 接成 MCP”“给 Agent 加工具”“做一个 MCP Server”，或要使用 Python/FastMCP、TypeScript MCP SDK、`@modelcontextprotocol/server` v2、从 `@modelcontextprotocol/sdk` v1 升级时使用；也适用于工具 schema、分页、鉴权、stdio/Streamable HTTP、自检脚本和评测设计。
 license: Complete terms in LICENSE.txt
 ---
 
@@ -58,8 +58,18 @@ license: Complete terms in LICENSE.txt
 - **MCP 最佳实践**：[📋 查看最佳实践](./reference/mcp_best_practices.md) - 核心指南
 
 **对于 TypeScript（推荐）：**
-- **TypeScript SDK**：使用 WebFetch 加载 `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md`
-- [⚡ TypeScript 指南](./reference/node_mcp_server.md) - TypeScript 模式和示例
+
+TypeScript SDK 有两个主要版本，写代码前先根据项目依赖选择：
+- **v2**（`@modelcontextprotocol/server`）：当前稳定版，新建服务器默认使用。
+- **v1**（`@modelcontextprotocol/sdk`）：只接收 bug 和安全修复。仅当现有项目的 `package.json` 已依赖它时继续使用，或按用户要求运行 `npx @modelcontextprotocol/codemod@latest v1-to-v2 .` 迁移。
+
+如果项目已经使用 v1，用一两句话告知用户：v2（`@modelcontextprotocol/server`）是当前稳定版，v1 只接收 bug 与安全修复，官方 codemod 可以迁移。除非用户明确要求升级，否则随后继续按 v1 实现。
+
+不要在同一项目混用两个版本：从 `@modelcontextprotocol/sdk/...` 导入的 v1 示例不能直接用于 v2。
+
+- **TypeScript SDK（v2）**：使用 WebFetch 加载 `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md`；完整文档索引为 `https://ts.sdk.modelcontextprotocol.io/v2/llms.txt`
+- [⚡ TypeScript 指南（v2）](./reference/node_mcp_server_v2.md) - v2 模式、完整示例与自检
+- 仅现有 v1 项目：读取 `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/v1.x/README.md` 和 [TypeScript 指南（v1）](./reference/node_mcp_server.md)
 
 **对于 Python：**
 - **Python SDK**：使用 WebFetch 加载 `https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md`
@@ -73,6 +83,30 @@ license: Complete terms in LICENSE.txt
 **工具选择：**
 优先考虑全面的 API 覆盖率。列出要实现的端点，从最常见的操作开始。
 
+#### 1.5 中文任务示例
+
+**示例 1：新建 TypeScript MCP 服务**
+
+输入：“把工单 API 封装成 TypeScript MCP Server，本地给 IDE 用 stdio，远程部署走 Streamable HTTP 和 Bearer 鉴权；请给可运行代码和 smoke test。”
+
+执行要点：
+- 项目没有 v1 依赖，选择 `@modelcontextprotocol/server` v2、Zod 4 和 `createServer()` 工厂。
+- 工具 schema 带约束与描述，列表接口支持分页，远程路由保留 Host/Origin 校验并验证访问令牌。
+- 同一份实现支持 stdio 与 HTTP；运行 `npm run build` 和 v2 指南中的自检脚本。
+
+验收：依赖和 import 不混入 v1；stdio 不向 stdout 打日志；自检能列出工具、调用只读工具并拒绝非法参数。
+
+**示例 2：现有 v1 项目继续维护或迁移**
+
+输入：“这个仓库还在用 `@modelcontextprotocol/sdk`，先帮我加一个查订单工具；如果迁 v2 风险不大，也给出升级步骤，但不要擅自改完整个项目。”
+
+执行要点：
+- 先读 `package.json`，确认项目是 v1；用一两句话说明 v2 现状和 `v1-to-v2` codemod。
+- 用户没有明确要求迁移时，继续读取 v1 指南实现新工具，不复制 v2 的 import、Zod 4 或 handler context 写法。
+- 若用户选择迁移，再运行 codemod，检查 `@mcp-codemod-error`、Zod 版本、TypeScript 编译和原有测试。
+
+验收：新增功能与现有 v1 项目兼容；迁移方案与功能改动分开；没有在一次提交里混合两套 SDK。
+
 ---
 
 ### 阶段 2：实现
@@ -80,7 +114,7 @@ license: Complete terms in LICENSE.txt
 #### 2.1 设置项目结构
 
 有关项目设置，请参见特定语言的指南：
-- [⚡ TypeScript 指南](./reference/node_mcp_server.md) - 项目结构、package.json、tsconfig.json
+- [⚡ TypeScript 指南（v2）](./reference/node_mcp_server_v2.md) - 项目结构、package.json、tsconfig.json（现有 v1 项目使用 [v1 指南](./reference/node_mcp_server.md)）
 - [🐍 Python 指南](./reference/python_mcp_server.md) - 模块组织、依赖项
 
 #### 2.2 实现核心基础设施
@@ -138,6 +172,7 @@ license: Complete terms in LICENSE.txt
 
 **TypeScript：**
 - 运行 `npm run build` 验证编译
+- v2 项目：使用 [v2 指南](./reference/node_mcp_server_v2.md#verify-your-server) 的自检脚本验证已构建服务器
 - 使用 MCP Inspector 测试：`npx @modelcontextprotocol/inspector`
 
 **Python：**
@@ -210,7 +245,8 @@ license: Complete terms in LICENSE.txt
 
 ### SDK 文档（在阶段 1/2 期间加载）
 - **Python SDK**：从 `https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md` 获取
-- **TypeScript SDK**：从 `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md` 获取
+- **TypeScript SDK（v2）**：从 `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md` 获取；完整文档索引为 `https://ts.sdk.modelcontextprotocol.io/v2/llms.txt`
+- **TypeScript SDK（v1，仅现有 v1 项目）**：从 `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/v1.x/README.md` 获取
 
 ### 特定语言的实现指南（在阶段 2 期间加载）
 - [🐍 Python 实现指南](./reference/python_mcp_server.md) - 完整的 Python/FastMCP 指南，包括：
@@ -220,12 +256,16 @@ license: Complete terms in LICENSE.txt
   - 完整的工作示例
   - 质量检查清单
 
-- [⚡ TypeScript 实现指南](./reference/node_mcp_server.md) - 完整的 TypeScript 指南，包括：
-  - 项目结构
-  - Zod 架构模式
-  - 使用 `server.registerTool` 的工具注册
-  - 完整的工作示例
-  - 质量检查清单
+- [⚡ TypeScript 实现指南（SDK v2）](./reference/node_mcp_server_v2.md) - 面向 `@modelcontextprotocol/server` 的完整指南，包括：
+  - 项目设置与服务器工厂
+  - Zod 4 schema、输出格式、分页和错误处理
+  - 同时服务 stdio 与 Streamable HTTP 的完整示例，以及 Bearer 鉴权
+  - 资源、提示词和通知
+  - 验证已构建服务器的自检脚本
+  - 高级特性的 SDK 示例链接
+  - v1 → v2 对照、迁移步骤和质量检查清单
+
+- [⚡ TypeScript 实现指南（SDK v1）](./reference/node_mcp_server.md) - 现有 `@modelcontextprotocol/sdk` 项目的等价指南
 
 ### 评估指南（在阶段 4 期间加载）
 - [✅ 评估指南](./reference/evaluation.md) - 完整的评估创建指南，包括：

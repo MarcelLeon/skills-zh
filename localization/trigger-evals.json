@@ -113,9 +113,14 @@
     "mcp-builder": {
       "should_trigger": [
         "我要把公司工单 API 封装成 MCP Server，工具描述要让模型容易选对。",
-        "用 FastMCP 做一个中文知识库检索服务，并设计一组可评测的工具调用样例。"
+        "用 FastMCP 做一个中文知识库检索服务，并设计一组可评测的工具调用样例。",
+        "新建一个 TypeScript MCP server 接企业工单 API，用 @modelcontextprotocol/server v2 和 Zod 4，同时支持 stdio、Streamable HTTP、Bearer 鉴权和可执行 smoke test。",
+        "这个仓库的 package.json 还依赖 @modelcontextprotocol/sdk v1；请先说明 v2 迁移影响，再用官方 codemod 升级，修复 import、handler context 和类型检查，不能混用两套 SDK。"
       ],
-      "should_not_trigger": ["写一个普通 Flask REST API，不需要给模型调用。"]
+      "should_not_trigger": [
+        "写一个普通 Flask REST API，不需要给模型调用。",
+        "把现有 Express 4 服务升级到 Express 5，只处理路由和中间件兼容，不涉及 MCP、Agent 工具或模型调用。"
+      ]
     },
     "pdf": {
       "should_trigger": [

@@ -1,7 +1,7 @@
 ---
 name: xlsx
 description: "当电子表格是主要输入或交付物时必须使用本技能。适用于打开、读取、清洗、修复、编辑或创建 .xlsx、.xlsm、.xltx、.csv、.tsv，包括中文销售台账、预算表、排期表、数据清洗、补公式、格式化、图表和模板更新。用户只说“下载目录里那个表”“把脏 CSV 整成 Excel”也应触发。若主要产物是 Word、HTML、独立 Python 脚本、数据库流水线或 Google Sheets API，则不要触发。"
-license: Proprietary. LICENSE.txt has complete terms
+license: Complete terms in LICENSE.txt
 ---
 
 # XLSX 创建、编辑与分析

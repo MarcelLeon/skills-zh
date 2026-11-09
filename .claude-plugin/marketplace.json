@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Anthropic Agent Skills 的中文本土化适配版本",
-    "version": "1.0.7"
+    "version": "1.0.9"
   },
   "plugins": [
     {

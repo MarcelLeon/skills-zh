@@ -1,7 +1,7 @@
 ---
 name: docx
 description: "只要用户要创建、读取、修改或交付 Word 文档/模板（.docx、.dotx），就应使用本技能。中文触发包括：把会议纪要整理成正式 Word、制作带目录/页码/页眉页脚的报告或函件、修改合同、修订模式、批注、替换图片、提取或重组 Word 内容。即使用户只说“做成正式文档”“给我一份可打印的报告”，只要目标产物是 Word，也应触发。不要用于 PDF、表格、Google Docs API 或与文档无关的编码任务。"
-license: Proprietary. LICENSE.txt has complete terms
+license: Complete terms in LICENSE.txt
 ---
 
 # DOCX 创建、编辑与分析

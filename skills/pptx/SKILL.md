@@ -1,7 +1,7 @@
 ---
 name: pptx
 description: "只要 .pptx 或 .potx 参与任务，就必须使用本技能，无论它是输入、输出还是中间材料。中文触发包括：做汇报 PPT、路演稿、培训课件、读/改现有演示文稿、套公司模板、合并拆分页面、调整母版布局、讲稿备注或批注。用户只说“做几页汇报”“把方案整理成 slides”，只要需要真正交付或读取幻灯片也应触发；仅讨论演讲提纲且不操作 PPT 文件时不触发。"
-license: Proprietary. LICENSE.txt has complete terms
+license: Complete terms in LICENSE.txt
 ---
 
 # PPTX 创建、编辑与分析
